@@ -1,0 +1,8 @@
+-Fu../PascalGameEngine/sfml
+-Fu../PascalGameEngine/engine
+-Fu../src/core
+-FE../bin
+-FU$fpctarget
+-Sm
+-Mdelphi
+-Sh 
