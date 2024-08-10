@@ -28,7 +28,6 @@ type
   TMap = class
   private
     freecells:TUniList<TPoint> ;
-    function isPointExist(x,y:Integer):Boolean ;
     function getColor(x,y:Integer):TColor ;
   public
     class procedure UpdateXYByDir(var x:Integer; var y:Integer; dir:TDir; delta:Integer=1) ;
@@ -37,6 +36,7 @@ type
     class function GetDirStr(dir:TDir):string ;
     constructor Create() ;
     destructor Destroy() ; override ;
+    function isPointExist(x,y:Integer):Boolean ;
     function isFreeAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
     function getColorAtDist(x,y:Integer; dir:TDir; dist:Integer):TColor ;
     function getColorAtDistLeft(x,y:Integer; dir:TDir; dist:Integer):TColor ;
