@@ -43,6 +43,7 @@ type
     function getColorAtDistRight(x,y:Integer; dir:TDir; dist:Integer):TColor ;
     function isWallLeftAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
     function isWallRightAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
+    function canSeeAtToDir(x,y:Integer; dir:TDir):Boolean ;
   end;
 
 implementation
@@ -120,6 +121,27 @@ begin
   RollDirRight(dir) ;
   UpdateXYByDir(x,y,dir,1) ;
   Result:=getColor(x,y) ;
+end;
+
+function TMap.canSeeAtToDir(x, y: Integer; dir: TDir): Boolean;
+var xn,yn:Integer ;
+    z1,z2:Boolean ;
+begin
+  xn:=x ; yn:=y ;
+  UpdateXYByDir(xn,yn,dir) ;
+  // Если спереди есть пространство, то всё ОК
+  if isPointExist(xn,yn) then Exit(True) ;
+
+  // Если это коридорный тупик, то смотреть в него тоже можно
+  xn:=x ; yn:=y ;
+  RollDirRight(dir) ;
+  UpdateXYByDir(xn,yn,dir,1) ;
+  z1:=isPointExist(xn,yn) ;
+
+  UpdateXYByDir(xn,yn,dir,-2) ;
+  z2:=isPointExist(xn,yn) ;
+
+  Result:=(not z1)and(not z2) ;
 end;
 
 class function TMap.GetDirStr(dir: TDir): string;

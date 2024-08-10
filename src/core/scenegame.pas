@@ -18,6 +18,8 @@ type
     font:TSfmlFont ;
     map:TMap ;
     textInfo:TSfmlText ;
+    ineffect:Boolean ;
+    lastrotdir:TDir ;
   public
     constructor Create() ;
     function Init():Boolean ; override ;
@@ -42,6 +44,7 @@ begin
   overscene:=ogl ;
   font:=TSfmlFont.Create('fonts'+PATH_SEP+'arial.ttf');
   textInfo:=createText(font,'',24,SfmlWhite) ;
+  ineffect:=False ;
   Result:=True ;
 end ;
 
@@ -67,10 +70,12 @@ begin
         if (event.event.key.code = sfKeyLeft) then begin
           wr.RotLeft() ;
           ogl.Reset() ;
+          lastrotdir:=dLeft ;
         end;
         if (event.event.key.code = sfKeyRight) then begin
           wr.RotRight() ;
           ogl.Reset() ;
+          lastrotdir:=dRight ;
         end;
       end ;
   end;
@@ -78,7 +83,16 @@ begin
   if wr.isInEffect() then begin
     wr.Update(dt) ;
     ogl.Reset() ;
-  end;
+    ineffect:=True ;
+  end
+  else begin
+    if ineffect then begin
+      ineffect:=False ;
+      if not map.canSeeAtToDir(wr.getX(),wr.getY(),wr.getDir()) then begin
+        if lastrotdir=dLeft then wr.RotLeft() else wr.RotRight() ;
+      end;
+    end ;
+  end
 end ;
 
 procedure TSceneGame.RenderFunc() ;
