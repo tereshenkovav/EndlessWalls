@@ -80,11 +80,12 @@ procedure TSceneGame.MiniMapRebuild;
 var i,j,p:Integer ;
     c:TSfmlColor ;
 begin
+  map.UpdateOpenedByPosDirDist(wr.getX(),wr.getY(),wr.getDir(),MAX_DIST) ;
   p:=0 ;
   for i := 0 to MMAPRES-1 do
     for j := 0 to MMAPRES-1 do begin
       c:=createSFMLColor($404040) ;
-      if (map.isPointExist(wr.getX()-MMAPD+i,wr.getY()+MMAPD-j)) then c:=createSFMLColor($008000) ;
+      if (map.isPointOpened(wr.getX()-MMAPD+i,wr.getY()+MMAPD-j)) then c:=createSFMLColor($008000) ;
       mapvertex.Vertex[p].Color:=c ;
       mapvertex.Vertex[p+1].Color:=c ;
       mapvertex.Vertex[p+2].Color:=c ;
@@ -142,6 +143,7 @@ begin
   end
   else begin
     if ineffect then begin
+      MiniMapRebuild() ;
       ineffect:=False ;
       if not map.canSeeAtToDir(wr.getX(),wr.getY(),wr.getDir()) then begin
         if lastrotdir=dLeft then wr.RotLeft() else wr.RotRight() ;

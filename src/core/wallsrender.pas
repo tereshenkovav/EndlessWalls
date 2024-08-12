@@ -41,6 +41,8 @@ type
     function isInEffect():Boolean ;
   end;
 
+const MAX_DIST = 6 ;
+
 implementation
 uses Math ;
 
@@ -170,7 +172,6 @@ var d1,pc:Single ;
     c:TColor ;
     q:Integer ;
     oldpc:Single ;
-const MAX_DIST = 6 ;
 begin
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_TEXTURE_2D);
