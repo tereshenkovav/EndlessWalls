@@ -16,6 +16,7 @@ type
     ogl:TSceneOpenGL ;
     wr:TWallsRender ;
     font:TSfmlFont ;
+    arrow:TSfmlSprite ;
     map:TMap ;
     textInfo:TSfmlText ;
     ineffect:Boolean ;
@@ -51,6 +52,7 @@ begin
   overscene:=ogl ;
   font:=TSfmlFont.Create('fonts'+PATH_SEP+'arial.ttf');
   textInfo:=createText(font,'',24,SfmlWhite) ;
+  arrow:=loadSprite('images'+PATH_SEP+'arrow.png',[sloCentered,sloNoSmooth]) ;
   ineffect:=False ;
 
   mapvertex:=TSfmlVertexArray.Create ;
@@ -155,10 +157,17 @@ end ;
 
 procedure TSceneGame.RenderFunc() ;
 begin
-  textInfo.UnicodeString:=Format('x=%d y=%d dir=%s',[wr.getX(),wr.getY(),
-    TMap.GetDirStr(wr.getDir())]) ;
+  textInfo.UnicodeString:=Format('Map result: %d',[map.getResult()]) ;
   DrawText(textInfo,800,10) ;
   window.Draw(mapvertex) ;
+
+  case wr.getDir() of
+    dUp: arrow.Rotation:=0 ;
+    dLeft: arrow.Rotation:=-90 ;
+    dRight: arrow.Rotation:=90 ;
+    dDown: arrow.Rotation:=180 ;
+  end;
+  DrawSprite(arrow,896,340) ;
 end ;
 
 procedure TSceneGame.UnInit() ;

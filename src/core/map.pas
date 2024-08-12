@@ -41,6 +41,7 @@ type
     class function GetDirStr(dir:TDir):string ;
     constructor Create() ;
     destructor Destroy() ; override ;
+    function getResult():Integer ;
     function isPointOpened(x,y:Integer):Boolean ;
     function isPointDark(x, y: Integer):Boolean;
     function isFreeAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
@@ -188,6 +189,15 @@ begin
     dRight:  Result:='Right' ;
     dDown:  Result:='Down' ;
   end;
+end;
+
+// Реализация неоптимальна, нужно вести учет открытых ячеек в момент setOpened
+function TMap.getResult: Integer;
+var p:TMapCell ;
+begin
+  Result:=0 ;
+  for p in freecells do
+    if p.opened then Inc(Result) ;
 end;
 
 function TMap.isFreeAtDist(x, y: Integer; dir: TDir; dist: Integer): Boolean;
