@@ -86,6 +86,7 @@ begin
     for j := 0 to MMAPRES-1 do begin
       c:=createSFMLColor($404040) ;
       if (map.isPointOpened(wr.getX()-MMAPD+i,wr.getY()+MMAPD-j)) then c:=createSFMLColor($008000) ;
+      if (map.isPointDark(wr.getX()-MMAPD+i,wr.getY()+MMAPD-j)) then c:=createSFMLColor($006000) ;
       mapvertex.Vertex[p].Color:=c ;
       mapvertex.Vertex[p+1].Color:=c ;
       mapvertex.Vertex[p+2].Color:=c ;

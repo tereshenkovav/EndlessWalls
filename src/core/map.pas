@@ -20,6 +20,7 @@ type
     y:Integer ;
     c:TColor ;
     opened:Boolean ;
+    dark:Boolean ;
     class operator Equal(a: TMapCell; b: TMapCell): Boolean;
     class function NewP(Ax,Ay:Integer; r,g,b:Single):TMapCell ; static ;
   end;
@@ -31,6 +32,7 @@ type
     freecells:TUniList<TMapCell> ;
     function getColor(x,y:Integer):TColor ;
     procedure setOpened(x, y: Integer);
+    procedure setDark(x, y: Integer);
     function isPointExist(x,y:Integer):Boolean ;
   public
     class procedure UpdateXYByDir(var x:Integer; var y:Integer; dir:TDir; delta:Integer=1) ;
@@ -40,6 +42,7 @@ type
     constructor Create() ;
     destructor Destroy() ; override ;
     function isPointOpened(x,y:Integer):Boolean ;
+    function isPointDark(x, y: Integer):Boolean;
     function isFreeAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
     function getColorAtDist(x,y:Integer; dir:TDir; dist:Integer):TColor ;
     function getColorAtDistLeft(x,y:Integer; dir:TDir; dist:Integer):TColor ;
@@ -103,6 +106,20 @@ begin
     if (p.x=x)and(p.y=y) then Exit(p.c) ;
 end;
 
+procedure TMap.setDark(x, y: Integer);
+var i:Integer ;
+    p:TMapCell ;
+begin
+  for i:=0 to freecells.Count-1 do
+    if (freecells[i].x=x)and(freecells[i].y=y) then begin
+      p:=freecells[i] ;
+      if p.opened then Exit ;
+      p.dark:=True ;
+      freecells[i]:=p ;
+      Exit ;
+    end ;
+end;
+
 procedure TMap.setOpened(x, y: Integer);
 var i:Integer ;
     p:TMapCell ;
@@ -111,6 +128,7 @@ begin
     if (freecells[i].x=x)and(freecells[i].y=y) then begin
       p:=freecells[i] ;
       p.opened:=True ;
+      p.dark:=False ;
       freecells[i]:=p ;
       Exit ;
     end ;
@@ -178,6 +196,14 @@ begin
   Result:=isPointExist(x,y)
 end;
 
+function TMap.isPointDark(x, y: Integer): Boolean;
+var p:TMapCell ;
+begin
+  Result:=False ;
+  for p in freecells do
+    if (p.x=x)and(p.y=y) then Exit(p.dark) ;
+end;
+
 function TMap.isPointExist(x, y: Integer): Boolean;
 var p:TMapCell ;
 begin
@@ -191,7 +217,7 @@ var p:TMapCell ;
 begin
   Result:=False ;
   for p in freecells do
-    if (p.x=x)and(p.y=y)and(p.opened) then Exit(True) ;
+    if (p.x=x)and(p.y=y) then Exit(p.opened) ;
 end;
 
 function TMap.isWallLeftAtDist(x, y: Integer; dir: TDir;
@@ -246,11 +272,21 @@ begin
     if isPointExist(x,y) then setOpened(x,y) else Exit ;
     x2:=x ; y2:=y ;
     UpdateXYByDir(x2,y2,dirleft,1) ;
-    if isPointExist(x2,y2) then setOpened(x2,y2) ;
+    if isPointExist(x2,y2) then begin
+      setOpened(x2,y2) ;
+      UpdateXYByDir(x2,y2,dirleft,1) ;
+      setDark(x2,y2) ;
+    end;
     x2:=x ; y2:=y ;
     UpdateXYByDir(x2,y2,dirright,1) ;
-    if isPointExist(x2,y2) then setOpened(x2,y2) ;
+    if isPointExist(x2,y2) then begin
+      setOpened(x2,y2) ;
+      UpdateXYByDir(x2,y2,dirright,1) ;
+      setDark(x2,y2) ;
+    end;
   end;
+  UpdateXYByDir(x,y,dir) ;
+  if isPointExist(x,y) then setDark(x,y) ;
 end;
 
 class procedure TMap.UpdateXYByDir(var x, y: Integer; dir: TDir; delta:Integer);
@@ -271,6 +307,7 @@ begin
   Result.c.g:=g ;
   Result.c.b:=b ;
   Result.opened:=False ;
+  Result.dark:=False ;
 end;
 
 class operator TMapCell.Equal(a, b: TMapCell): Boolean;
