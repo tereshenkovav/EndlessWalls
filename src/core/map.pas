@@ -25,11 +25,21 @@ type
     class function NewP(Ax,Ay:Integer; r,g,b:Single):TMapCell ; static ;
   end;
 
+  TMarker = record
+    x:Integer ;
+    y:Integer ;
+    dir:TDir ;
+    code:Integer ;
+    class operator Equal(a: TMarker; b: TMarker): Boolean;
+    class function NewP(Ax,Ay:Integer; Adir:TDir; Acode:Integer):TMarker ; static ;
+  end ;
+
   { TMap }
 
   TMap = class
   private
     freecells:TUniList<TMapCell> ;
+    markers:TUniList<TMarker> ;
     function getColor(x,y:Integer):TColor ;
     procedure setOpened(x, y: Integer);
     procedure setDark(x, y: Integer);
@@ -38,6 +48,8 @@ type
     class procedure UpdateXYByDir(var x:Integer; var y:Integer; dir:TDir; delta:Integer=1) ;
     class procedure RollDirLeft(var dir:TDir) ;
     class procedure RollDirRight(var dir:TDir) ;
+    class function GetRolledDirLeft(dir:TDir):TDir ;
+    class function GetRolledDirRight(dir:TDir):TDir ;
     class function GetDirStr(dir:TDir):string ;
     constructor Create() ;
     destructor Destroy() ; override ;
@@ -51,7 +63,10 @@ type
     function isWallLeftAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
     function isWallRightAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
     function canSeeAtToDir(x,y:Integer; dir:TDir):Boolean ;
+    function canSetMarker(x,y:Integer; dir,markerdir:TDir):Boolean ;
+    function isMarkerAt(x,y:Integer; dir:TDir; var markercode:Integer):Boolean ;
     procedure UpdateOpenedByPosDirDist(x,y:Integer; dir:TDir; dist:Integer) ;
+    procedure SetMarker(x,y:Integer; dir,markerdir:TDir; code:Integer) ;
   end;
 
 implementation
@@ -89,13 +104,28 @@ begin
   freecells.Add(TMapCell.NewP(2,14,0,1,0)) ;
   freecells.Add(TMapCell.NewP(3,14,0,1,0)) ;
   freecells.Add(TMapCell.NewP(4,14,0,1,1)) ;
+
+  markers:=TUniList<TMarker>.Create ;
 end;
 
 destructor TMap.Destroy() ;
 begin
   freecells.Free ;
+  markers.Free ;
   inherited Destroy ;
 end ;
+
+class function TMap.GetRolledDirLeft(dir: TDir): TDir;
+begin
+  RollDirLeft(dir) ;
+  Result:=dir ;
+end;
+
+class function TMap.GetRolledDirRight(dir: TDir): TDir;
+begin
+  RollDirRight(dir) ;
+  Result:=dir ;
+end;
 
 function TMap.getColor(x, y: Integer): TColor;
 var p:TMapCell ;
@@ -119,6 +149,21 @@ begin
       freecells[i]:=p ;
       Exit ;
     end ;
+end;
+
+function TMap.canSetMarker(x, y: Integer; dir, markerdir: TDir): Boolean;
+begin
+  if markerdir=dLeft then RollDirLeft(dir) ;
+  if markerdir=dRight then RollDirRight(dir) ;
+  UpdateXYByDir(x,y,dir) ;
+  Result:=not isPointExist(x,y) ;
+end;
+
+procedure TMap.SetMarker(x, y: Integer; dir, markerdir: TDir; code: Integer);
+begin
+  if markerdir=dLeft then RollDirLeft(dir) ;
+  if markerdir=dRight then RollDirRight(dir) ;
+  markers.Add(TMarker.NewP(x,y,dir,code)) ;
 end;
 
 procedure TMap.setOpened(x, y: Integer);
@@ -204,6 +249,18 @@ function TMap.isFreeAtDist(x, y: Integer; dir: TDir; dist: Integer): Boolean;
 begin
   UpdateXYByDir(x,y,dir,dist) ;
   Result:=isPointExist(x,y)
+end;
+
+function TMap.isMarkerAt(x, y: Integer; dir: TDir;
+  var markercode: Integer): Boolean;
+var m:TMarker ;
+begin
+  Result:=False ;
+  for m in markers do
+    if (m.x=x)and(m.y=y)and(m.dir=dir) then begin
+      markercode:=m.code ;
+      Exit(True) ;
+    end;
 end;
 
 function TMap.isPointDark(x, y: Integer): Boolean;
@@ -323,6 +380,22 @@ end;
 class operator TMapCell.Equal(a, b: TMapCell): Boolean;
 begin
   Result:=(a.x=b.x)and(a.y=b.y) ;
+end;
+
+{ TMarker }
+
+class operator TMarker.Equal(a, b: TMarker): Boolean;
+begin
+  Result:=(a.x=b.x)and(a.y=b.y)and(a.dir=b.dir) ;
+end;
+
+class function TMarker.NewP(Ax, Ay: Integer; Adir: TDir;
+  Acode: Integer): TMarker;
+begin
+  Result.x:=Ax ;
+  Result.y:=Ay ;
+  Result.dir:=Adir ;
+  Result.code:=Acode ;
 end;
 
 end.

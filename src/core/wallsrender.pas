@@ -15,7 +15,7 @@ type
 
   TWallsRender = class(TOpenGLRender)
   private
-    tex_marker:TSfmlTexture ;
+    tex_markers:array of TSfmlTexture ;
     w,h:Integer ;
     x,y:Integer ;
     px,pz:Single ;
@@ -56,12 +56,18 @@ begin
   px:=0 ;
   pz:=-2 ;
   floorc:=0.9 ;
-  tex_marker:=TSfmlTexture.Create('images'+PATH_SEP+'marker.png') ;
+  SetLength(tex_markers,3) ;
+  tex_markers[0]:=TSfmlTexture.Create('images'+PATH_SEP+'marker0.png') ;
+  tex_markers[1]:=TSfmlTexture.Create('images'+PATH_SEP+'marker1.png') ;
+  tex_markers[2]:=TSfmlTexture.Create('images'+PATH_SEP+'marker2.png') ;
 end;
 
 destructor TWallsRender.Destroy() ;
+var i:Integer ;
 begin
-  tex_marker.Free ;
+  for i:=0 to Length(tex_markers)-1 do
+    tex_markers[i].Free ;
+  SetLength(tex_markers,0) ;
   inherited Destroy ;
 end ;
 
@@ -107,6 +113,23 @@ begin
     glEnd();
 end ;
 
+procedure rightMarker(marker:TSfmlTexture; pc:Single) ;
+begin
+   glColor3f(pc, pc, pc);
+      marker.Bind() ;
+      glBegin(GL_POLYGON);
+        glTexCoord2f(0.0, 0.0);
+        glVertex3f(0.99, -0.5, 0.5);
+        glTexCoord2f(0.0, 1.0);
+        glVertex3f(0.99, 0.5, 0.5);
+        glTexCoord2f(1.0, 1.0);
+        glVertex3f(0.99, 0.5, -0.5);
+        glTexCoord2f(1.0, 0.0);
+        glVertex3f(0.99, -0.5, -0.5);
+      glEnd();
+      SfmlTextureBind(nil) ;
+end ;
+
 procedure leftWall() ;
 begin
     glBegin(GL_POLYGON);
@@ -117,7 +140,24 @@ begin
     glEnd();
 end ;
 
-procedure frontWall(marker:Boolean; tex_marker:TSfmlTexture) ;
+procedure leftMarker(marker:TSfmlTexture; pc:Single) ;
+begin
+   glColor3f(pc, pc, pc);
+      marker.Bind() ;
+      glBegin(GL_POLYGON);
+        glTexCoord2f(0.0, 0.0);
+        glVertex3f(-0.99, -0.5, -0.5);
+        glTexCoord2f(0.0, 1.0);
+        glVertex3f(-0.99, 0.5, -0.5);
+        glTexCoord2f(1.0, 1.0);
+        glVertex3f(-0.99, 0.5, 0.5);
+        glTexCoord2f(1.0, 0.0);
+        glVertex3f(-0.99, -0.5, 0.5);
+      glEnd();
+      SfmlTextureBind(nil) ;
+end ;
+
+procedure frontWall() ;
 begin
     glBegin(GL_POLYGON);
         glVertex3f(-1.0, -1.0, 1.0);
@@ -125,11 +165,13 @@ begin
         glVertex3f(1.0, 1.0, 1.0);
         glVertex3f(-1.0, 1.0, 1.0);
     glEnd();
+end ;
 
-    if marker then begin
-      glColor3f(1.0,1.0,1.0) ;
-      tex_marker.Bind() ;
-    glBegin(GL_POLYGON);
+procedure frontMarker(marker:TSfmlTexture; pc:Single) ;
+begin
+   glColor3f(pc, pc, pc);
+      marker.Bind() ;
+      glBegin(GL_POLYGON);
         glTexCoord2f(0.0, 0.0);
         glVertex3f(-0.5, -0.5, 0.99);
         glTexCoord2f(0.0, 1.0);
@@ -138,10 +180,8 @@ begin
         glVertex3f(0.5, 0.5, 0.99);
         glTexCoord2f(1.0, 0.0);
         glVertex3f(0.5, -0.5, 0.99);
-    glEnd();
-    SfmlTextureBind(nil) ;
-    end ;
-
+      glEnd();
+      SfmlTextureBind(nil) ;
 end ;
 
 procedure roofAndFloor() ;
@@ -172,6 +212,8 @@ var d1,pc:Single ;
     c:TColor ;
     q:Integer ;
     oldpc:Single ;
+    xn,yn:Integer ;
+    code:Integer ;
 begin
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_TEXTURE_2D);
@@ -180,7 +222,7 @@ begin
     glViewport(0,0,w,h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, w/h, 0.01, 100.0);
+    gluPerspective(67, w/h, 0.01, 100.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -198,6 +240,10 @@ begin
           c:=map.getColorAtDist(x,y,dir,d) ;
           setColor(c,pc) ;
           leftWall() ;
+
+          xn:=x ; yn:=y ;
+          TMap.UpdateXYByDir(xn,yn,dir,d) ;
+          if map.isMarkerAt(xn,yn,TMap.GetRolledDirLeft(dir),code) then leftMarker(tex_markers[code],pc) ;
         end
         else begin
           glPushMatrix() ;
@@ -209,7 +255,13 @@ begin
             roofAndFloor() ;
             c:=map.getColorAtDistLeft(x,y,dir,d) ;
             setColor(c,pc) ;
-            frontWall(false,tex_marker) ;
+            frontWall() ;
+
+            // Перемещаем вперед на d и влево на q+1
+            xn:=x ; yn:=y ;
+            TMap.UpdateXYByDir(xn,yn,dir,d) ;
+            TMap.UpdateXYByDir(xn,yn,TMap.GetRolledDirLeft(dir),q+1) ;
+            if map.isMarkerAt(xn,yn,dir,code) then frontMarker(tex_markers[code],pc) ;
           end;
           pc:=oldpc ;
           glPopMatrix() ;
@@ -219,6 +271,10 @@ begin
           c:=map.getColorAtDist(x,y,dir,d) ;
           setColor(c,pc) ;
           rightWall() ;
+
+          xn:=x ; yn:=y ;
+          TMap.UpdateXYByDir(xn,yn,dir,d) ;
+          if map.isMarkerAt(xn,yn,TMap.GetRolledDirRight(dir),code) then rightMarker(tex_markers[code],pc) ;
         end
         else begin
           glPushMatrix() ;
@@ -230,7 +286,13 @@ begin
             roofAndFloor() ;
             c:=map.getColorAtDistRight(x,y,dir,d) ;
             setColor(c,pc) ;
-            frontWall(false,tex_marker) ;
+            frontWall() ;
+
+            // Перемещаем вперед на d и влево на q+1
+            xn:=x ; yn:=y ;
+            TMap.UpdateXYByDir(xn,yn,dir,d) ;
+            TMap.UpdateXYByDir(xn,yn,TMap.GetRolledDirRight(dir),q+1) ;
+            if map.isMarkerAt(xn,yn,dir,code) then frontMarker(tex_markers[code],pc) ;
           end;
           pc:=oldpc ;
           glPopMatrix() ;
@@ -248,7 +310,11 @@ begin
           pc:=0.9-0.9*(d-0.5-d1)/MAX_DIST ;
           c:=map.getColorAtDist(x,y,dir,d) ;
           setColor(c,pc) ;
-          frontWall((c.g=1)and(c.b=1),tex_marker) ;
+          frontWall() ;
+
+          xn:=x ; yn:=y ;
+          TMap.UpdateXYByDir(xn,yn,dir,d) ;
+          if map.isMarkerAt(xn,yn,dir,code) then frontMarker(tex_markers[code],pc) ;
           break ;
         end ;
 

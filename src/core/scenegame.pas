@@ -136,6 +136,24 @@ begin
           MiniMapRebuild() ;
           lastrotdir:=dRight ;
         end;
+        if (event.event.key.code = sfKeyZ) then begin
+          if map.canSetMarker(wr.getX(),wr.getY(),wr.getDir(),dLeft) then begin
+            map.SetMarker(wr.getX(),wr.getY(),wr.getDir(),dLeft,0) ;
+            ogl.Reset() ;
+          end ;
+        end;
+        if (event.event.key.code = sfKeyX) then begin
+          if map.canSetMarker(wr.getX(),wr.getY(),wr.getDir(),dUp) then begin
+            map.SetMarker(wr.getX(),wr.getY(),wr.getDir(),dUp,1) ;
+            ogl.Reset() ;
+          end ;
+        end;
+        if (event.event.key.code = sfKeyC) then begin
+          if map.canSetMarker(wr.getX(),wr.getY(),wr.getDir(),dRight) then begin
+            map.SetMarker(wr.getX(),wr.getY(),wr.getDir(),dRight,2) ;
+            ogl.Reset() ;
+          end ;
+        end;
       end ;
   end;
 
