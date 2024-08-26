@@ -45,7 +45,7 @@ end;
 function TSceneGame.Init():Boolean ;
 var i,j,p:Integer ;
 begin
-  map:=TMap.Create() ;
+  map:=TMap.Create(100) ;
   wr:=TWallsRender.Create(map,768,768) ;
   wr.SetStart(0,0,dUp) ;
   ogl:=TSceneOpenGL.Create(0,0,768,768,CreateSfmlColor($000000),wr) ;

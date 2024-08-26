@@ -22,7 +22,7 @@ type
     opened:Boolean ;
     dark:Boolean ;
     class operator Equal(a: TMapCell; b: TMapCell): Boolean;
-    class function NewP(Ax,Ay:Integer; r,g,b:Single):TMapCell ; static ;
+    class function NewP(Ax,Ay:Integer; Ac:TColor):TMapCell ; static ;
   end;
 
   TMarker = record
@@ -51,7 +51,7 @@ type
     class function GetRolledDirLeft(dir:TDir):TDir ;
     class function GetRolledDirRight(dir:TDir):TDir ;
     class function GetDirStr(dir:TDir):string ;
-    constructor Create() ;
+    constructor Create(size:Integer) ;
     destructor Destroy() ; override ;
     function getResult():Integer ;
     function isPointOpened(x,y:Integer):Boolean ;
@@ -70,40 +70,14 @@ type
   end;
 
 implementation
+uses MapGenerator ;
 
-constructor TMap.Create();
+constructor TMap.Create(size:Integer);
 begin
-  freecells:=TUniList<TMapCell>.Create() ;
-  freecells.Add(TMapCell.NewP(0,0,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,1,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,2,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,3,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,4,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(1,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(2,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(3,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(4,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(5,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(6,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(7,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(8,4,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(0,5,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,6,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,7,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,8,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,9,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(-1,9,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(-2,9,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(-3,9,0,0,1)) ;
-  freecells.Add(TMapCell.NewP(0,10,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,11,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,12,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,13,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(0,14,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(1,14,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(2,14,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(3,14,0,1,0)) ;
-  freecells.Add(TMapCell.NewP(4,14,0,1,1)) ;
+  with TMapGenerator.Create(size) do begin
+    freecells:=genCells() ;
+    Free ;
+  end;
 
   markers:=TUniList<TMarker>.Create ;
 end;
@@ -366,13 +340,11 @@ end;
 
 { TMapCell }
 
-class function TMapCell.NewP(Ax, Ay: Integer; r,g,b:Single): TMapCell;
+class function TMapCell.NewP(Ax, Ay: Integer; Ac:TColor): TMapCell;
 begin
   Result.x:=Ax ;
   Result.y:=Ay ;
-  Result.c.r:=r ;
-  Result.c.g:=g ;
-  Result.c.b:=b ;
+  Result.c:=Ac ;
   Result.opened:=False ;
   Result.dark:=False ;
 end;
