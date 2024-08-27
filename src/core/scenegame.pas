@@ -33,7 +33,7 @@ type
   end;
 
 implementation
-uses SfmlUtils ;
+uses SfmlUtils, Math ;
 
 const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
@@ -46,7 +46,7 @@ end;
 function TSceneGame.Init():Boolean ;
 var i,j,p:Integer ;
 begin
-  map:=TMap.Create(100) ;
+  map:=TMap.Create(4096) ;
   wr:=TWallsRender.Create(map,768,768) ;
   wr.SetStart(0,0,dUp) ;
   ogl:=TSceneOpenGL.Create(0,0,768,768,CreateSfmlColor($000000),wr) ;
@@ -194,12 +194,13 @@ end ;
 procedure TSceneGame.SaveMapToImage(const filename: string);
 var m2:T2DMap ;
     img:TSFMLImage;
-    i,j,x,y,sx,sy:Integer ;
-    c:TSfmlColor ;
+    i,j,x,y,sx,sy,startx,starty:Integer ;
+    c,cstart:TSfmlColor ;
 const SZ = 4 ;
 begin
-  m2:=map.SaveTo2D(sx,sy) ;
+  m2:=map.SaveTo2D(sx,sy,startx,starty) ;
   c:=createSFMLColor($FF00FF00) ;
+  cstart:=createSFMLColor($FFFF0000) ;
 
   img:=TSFMLImage.Create(SZ*sx,SZ*sy) ;
   for x := 0 to sx-1 do
@@ -207,7 +208,10 @@ begin
       if m2[x][y] then begin
         for i := 0 to SZ-1 do
           for j := 0 to SZ-1 do
-            img.Pixel[x*SZ+i,(sy-1-y)*SZ+j]:=c ;
+            if (x=startx)and(y=starty) then
+              img.Pixel[x*SZ+i,(sy-1-y)*SZ+j]:=cstart
+            else
+              img.Pixel[x*SZ+i,(sy-1-y)*SZ+j]:=c ;
       end;
   img.SaveToFile(filename) ;
 

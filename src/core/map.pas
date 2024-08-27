@@ -17,6 +17,13 @@ type
     b:Single ;
   end ;
 
+  TPoint = record
+    x:Integer ;
+    y:Integer ;
+    class operator Equal(a: TPoint; b: TPoint): Boolean;
+    class function NewP(Ax,Ay:Integer):TPoint ; static ;
+  end ;
+
   TMapCell = record
     x:Integer ;
     y:Integer ;
@@ -69,7 +76,7 @@ type
     function isMarkerAt(x,y:Integer; dir:TDir; var markercode:Integer):Boolean ;
     procedure UpdateOpenedByPosDirDist(x,y:Integer; dir:TDir; dist:Integer) ;
     procedure SetMarker(x,y:Integer; dir,markerdir:TDir; code:Integer) ;
-    function SaveTo2D(var sx:Integer; var sy:Integer):T2DMap ;
+    function SaveTo2D(var sx:Integer; var sy:Integer; var startx:Integer; var starty:Integer):T2DMap ;
   end;
 
 implementation
@@ -298,7 +305,8 @@ begin
   dir:=TDir(n) ;
 end;
 
-function TMap.SaveTo2D(var sx:Integer; var sy:Integer): T2DMap;
+function TMap.SaveTo2D(var sx:Integer; var sy:Integer;
+   var startx:Integer; var starty:Integer): T2DMap;
 var minx,miny,maxx,maxy:Integer ;
     p:TMapCell ;
     i,j:Integer ;
@@ -315,6 +323,8 @@ begin
   end;
   sx:=maxx-minx+1 ;
   sy:=maxy-miny+1 ;
+  startx:=-minx ;
+  starty:=-miny ;
   SetLength(Result,sx,sy) ;
   for i := 0 to sx-1 do
     for j := 0 to sy-1 do
@@ -396,6 +406,19 @@ begin
   Result.y:=Ay ;
   Result.dir:=Adir ;
   Result.code:=Acode ;
+end;
+
+{ TPoint }
+
+class operator TPoint.Equal(a, b: TPoint): Boolean;
+begin
+  Result:=(a.x=b.x)and(a.y=b.y) ;
+end;
+
+class function TPoint.NewP(Ax, Ay: Integer): TPoint;
+begin
+  Result.x:=Ax ;
+  Result.y:=Ay ;
 end;
 
 end.

@@ -36,46 +36,55 @@ begin
 end;
 
 function TMapGenerator.genCells: TUniList<TMapCell>;
-var tekc:Integer ;
-    x,y:Integer ;
-    dir,dirl,dirr:TDir ;
-    leftc:Integer ;
-    leftd:Integer ;
+var dir:TDir ;
     newways:TUniList<TDir> ;
+    nextpoints:TUniList<TPoint> ;
+    np:TPoint ;
+    i,len:Integer ;
+    ndel:Integer ;
+const
+  NEXT_POINT_COUNT = 3 ;
+
+procedure genWay(cells:TUniList<TMapCell>; x,y:Integer; dir:TDir; len:Integer;
+  c:TColor) ;
+var i:Integer ;
+begin
+  for i := 0 to len-1 do begin
+    TMap.UpdateXYByDir(x,y,dir) ;
+    cells.Add(TMapCell.NewP(x,y,c)) ;
+  end ;
+  if nextpoints.Count<NEXT_POINT_COUNT then nextpoints.Add(TPoint.NewP(x,y)) ;
+end;
+
 begin
   Result:=TUniList<TMapCell>.Create() ;
   newways:=TUniList<TDir>.Create ;
+  nextpoints:=TUniList<TPoint>.Create ;
 
   Randomize ;
 
-  tekc:=0 ;
-  x:=0 ; y:=0 ; dir:=dUp ;
-  leftc:=4+Random(4) ;
-  leftd:=4+Random(4) ;
-  while Result.Count<size do begin
-    Result.Add(TMapCell.NewP(x,y,colors[tekc])) ;
-    TMap.UpdateXYByDir(x,y,dir) ;
+  genWay(Result,0,-1,dUp,4+Random(4),colors[Random(Length(colors))]) ;
 
-    Dec(leftc) ;
-    if leftc<=0 then begin
-      leftc:=4+Random(4) ;
-      tekc:=Random(Length(colors)) ;
+  while Result.Count<size do begin
+    if nextpoints.Count=0 then Break ;
+
+    np:=nextpoints.ExtractAt(Random(nextpoints.Count)) ;
+
+    newways.Clear() ;
+    len:=4+Random(4) ;
+    for dir in [dLeft,dRight,dUp,dDown] do
+      if isNoCrossLine(Result,np.x,np.y,dir,len) then newways.Add(dir) ;
+
+    if newways.Count>1 then begin
+      ndel:=Random(newways.Count) ;
+      for i := 0 to ndel-1 do
+        newways.Delete(Random(newways.Count)) ;
     end ;
 
-    Dec(leftd) ;
-    if leftd<=0 then begin
-      leftd:=4+Random(4) ;
-      newways.Clear() ;
-      dirl:=TMap.GetRolledDirLeft(dir) ;
-      dirr:=TMap.GetRolledDirRight(dir) ;
-      if isNoCrossLine(Result,x,y,dirl,leftd) then newways.Add(dirl) ;
-      if isNoCrossLine(Result,x,y,dirr,leftd) then newways.Add(dirr) ;
-      if newways.Count=0 then
-        if isNoCrossLine(Result,x,y,dir,leftd) then newways.Add(dir) ;
+    while newways.Count>0 do begin
+      dir:=newways.ExtractAt(Random(newways.Count)) ;
 
-      if newways.Count=0 then Break ;
-
-      dir:=newways[Random(newways.Count)] ;
+      genWay(Result,np.x,np.y,dir,len,colors[Random(Length(colors))]) ;
     end ;
   end;
 
@@ -92,11 +101,22 @@ end;
 function TMapGenerator.isNoCrossLine(const cells: TUniList<TMapCell>; x,
   y: Integer; dir: TDir; len:Integer): Boolean;
 var i:Integer ;
+    dleft,dright:TDir ;
+    xn,yn:Integer ;
 begin
   Result:=True ;
+  dleft:=TMap.GetRolledDirLeft(dir) ;
+  dright:=TMap.GetRolledDirRight(dir) ;
   for i := 0 to len do begin
     TMap.UpdateXYByDir(x,y,dir) ;
     if isPointExist(cells,x,y) then Exit(False) ;
+
+    xn:=x ; yn:=y ;
+    TMap.UpdateXYByDir(xn,yn,dleft) ;
+    if isPointExist(cells,xn,yn) then Exit(False) ;
+    xn:=x ; yn:=y ;
+    TMap.UpdateXYByDir(xn,yn,dright) ;
+    if isPointExist(cells,xn,yn) then Exit(False) ;
   end;
 end;
 
