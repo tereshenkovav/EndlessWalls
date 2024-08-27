@@ -42,6 +42,7 @@ var dir:TDir ;
     np:TPoint ;
     i,len:Integer ;
     ndel:Integer ;
+
 const
   NEXT_POINT_COUNT = 3 ;
 
@@ -74,6 +75,14 @@ begin
     len:=4+Random(4) ;
     for dir in [dLeft,dRight,dUp,dDown] do
       if isNoCrossLine(Result,np.x,np.y,dir,len) then newways.Add(dir) ;
+
+    // Уменьшаем вероятность X-перекрестков
+    if newways.Contains(dLeft) and newways.Contains(dRight) then
+      if Random(5)<>0 then
+        if Random(2)=0 then newways.Remove(dLeft) else newways.Remove(dLeft) ;
+    if newways.Contains(dUp) and newways.Contains(dDown) then
+      if Random(5)<>0 then
+        if Random(2)=0 then newways.Remove(dUp) else newways.Remove(dDown) ;
 
     if newways.Count>1 then begin
       ndel:=Random(newways.Count) ;
