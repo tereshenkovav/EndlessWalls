@@ -9,6 +9,8 @@ uses
 type
   TDir = (dLeft,dUp,dRight,dDown) ;
 
+  T2DMap = array of array of Boolean ;
+
   TColor = record
     r:Single ;
     g:Single ;
@@ -67,6 +69,7 @@ type
     function isMarkerAt(x,y:Integer; dir:TDir; var markercode:Integer):Boolean ;
     procedure UpdateOpenedByPosDirDist(x,y:Integer; dir:TDir; dist:Integer) ;
     procedure SetMarker(x,y:Integer; dir,markerdir:TDir; code:Integer) ;
+    function SaveTo2D(var sx:Integer; var sy:Integer):T2DMap ;
   end;
 
 implementation
@@ -293,6 +296,31 @@ begin
   n:=Ord(dir)+1 ;
   if n>Ord(High(TDir)) then n:=Ord(Low(TDir)) ;
   dir:=TDir(n) ;
+end;
+
+function TMap.SaveTo2D(var sx:Integer; var sy:Integer): T2DMap;
+var minx,miny,maxx,maxy:Integer ;
+    p:TMapCell ;
+    i,j:Integer ;
+begin
+  minx:=freecells[0].x ;
+  miny:=freecells[0].y ;
+  maxx:=freecells[0].x ;
+  maxy:=freecells[0].y ;
+  for p in freecells do begin
+    if (p.x<minx) then minx:=p.x ;
+    if (p.x>maxx) then maxx:=p.x ;
+    if (p.y<miny) then miny:=p.y ;
+    if (p.y>maxy) then maxy:=p.y ;
+  end;
+  sx:=maxx-minx+1 ;
+  sy:=maxy-miny+1 ;
+  SetLength(Result,sx,sy) ;
+  for i := 0 to sx-1 do
+    for j := 0 to sy-1 do
+      Result[i][j]:=False ;
+  for p in freecells do
+    Result[p.x-minx][p.y-miny]:=True ;
 end;
 
 procedure TMap.UpdateOpenedByPosDirDist(x, y: Integer; dir: TDir;

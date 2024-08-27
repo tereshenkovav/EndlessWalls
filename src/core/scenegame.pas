@@ -23,6 +23,7 @@ type
     lastrotdir:TDir ;
     mapvertex:TSfmlVertexArray ;
     procedure MiniMapRebuild() ;
+    procedure SaveMapToImage(const filename:string) ;
   public
     constructor Create() ;
     function Init():Boolean ; override ;
@@ -74,6 +75,8 @@ begin
   mapvertex.Vertex[p+3].Position:=SfmlVector2f(768+14+MMAPD*MMAPSZ+1, 55+MMAPD*MMAPSZ+MMAPSZ-1);
 
   MiniMapRebuild() ;
+
+  SaveMapToImage('map.png') ;
 
   Result:=True ;
 end ;
@@ -187,6 +190,29 @@ begin
   end;
   DrawSprite(arrow,896,340) ;
 end ;
+
+procedure TSceneGame.SaveMapToImage(const filename: string);
+var m2:T2DMap ;
+    img:TSFMLImage;
+    i,j,x,y,sx,sy:Integer ;
+    c:TSfmlColor ;
+const SZ = 4 ;
+begin
+  m2:=map.SaveTo2D(sx,sy) ;
+  c:=createSFMLColor($FF00FF00) ;
+
+  img:=TSFMLImage.Create(SZ*sx,SZ*sy) ;
+  for x := 0 to sx-1 do
+    for y := 0 to sy-1 do
+      if m2[x][y] then begin
+        for i := 0 to SZ-1 do
+          for j := 0 to SZ-1 do
+            img.Pixel[x*SZ+i,(sy-1-y)*SZ+j]:=c ;
+      end;
+  img.SaveToFile(filename) ;
+
+  SetLength(m2,0,0) ;
+end;
 
 procedure TSceneGame.UnInit() ;
 begin
