@@ -17,11 +17,11 @@ type
     b:Single ;
   end ;
 
-  TPoint = record
+  TNextPoint = record
     x:Integer ;
     y:Integer ;
-    class operator Equal(a: TPoint; b: TPoint): Boolean;
-    class function NewP(Ax,Ay:Integer):TPoint ; static ;
+    class operator Equal(a: TNextPoint; b: TNextPoint): Boolean;
+    class function NewP(Ax,Ay:Integer):TNextPoint ; static ;
   end ;
 
   TMapCell = record
@@ -63,6 +63,7 @@ type
     constructor Create(size:Integer) ;
     destructor Destroy() ; override ;
     function getResult():Integer ;
+    function getTotalLen():Integer ;
     function isPointOpened(x,y:Integer):Boolean ;
     function isPointDark(x, y: Integer):Boolean;
     function isFreeAtDist(x,y:Integer; dir:TDir; dist:Integer):Boolean ;
@@ -109,6 +110,11 @@ class function TMap.GetRolledDirRight(dir: TDir): TDir;
 begin
   RollDirRight(dir) ;
   Result:=dir ;
+end;
+
+function TMap.getTotalLen: Integer;
+begin
+  Result:=freecells.Count ;
 end;
 
 function TMap.getColor(x, y: Integer): TColor;
@@ -408,14 +414,14 @@ begin
   Result.code:=Acode ;
 end;
 
-{ TPoint }
+{ TNextPoint }
 
-class operator TPoint.Equal(a, b: TPoint): Boolean;
+class operator TNextPoint.Equal(a, b: TNextPoint): Boolean;
 begin
   Result:=(a.x=b.x)and(a.y=b.y) ;
 end;
 
-class function TPoint.NewP(Ax, Ay: Integer): TPoint;
+class function TNextPoint.NewP(Ax, Ay: Integer): TNextPoint;
 begin
   Result.x:=Ax ;
   Result.y:=Ay ;

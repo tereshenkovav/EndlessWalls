@@ -178,7 +178,7 @@ end ;
 
 procedure TSceneGame.RenderFunc() ;
 begin
-  textInfo.UnicodeString:=Format('Map result: %d',[map.getResult()]) ;
+  textInfo.UnicodeString:=Format('Map result: %d/%d',[map.getResult(),map.getTotalLen()]) ;
   DrawText(textInfo,800,10) ;
   window.Draw(mapvertex) ;
 

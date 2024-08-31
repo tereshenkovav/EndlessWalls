@@ -38,13 +38,16 @@ end;
 function TMapGenerator.genCells: TUniList<TMapCell>;
 var dir:TDir ;
     newways:TUniList<TDir> ;
-    nextpoints:TUniList<TPoint> ;
-    np:TPoint ;
+    nextpoints:TUniList<TNextPoint> ;
+    np:TNextPoint ;
     i,len:Integer ;
     ndel:Integer ;
+    tekdist:Integer ;
+    maxidx,freeways,maxfreeways:Integer ;
 
 const
   NEXT_POINT_COUNT = 3 ;
+  DIST_FOR_TRUNC = 256 ;
 
 procedure genWay(cells:TUniList<TMapCell>; x,y:Integer; dir:TDir; len:Integer;
   c:TColor) ;
@@ -54,18 +57,19 @@ begin
     TMap.UpdateXYByDir(x,y,dir) ;
     cells.Add(TMapCell.NewP(x,y,c)) ;
   end ;
-  if nextpoints.Count<NEXT_POINT_COUNT then nextpoints.Add(TPoint.NewP(x,y)) ;
+  if nextpoints.Count<NEXT_POINT_COUNT then nextpoints.Add(TNextPoint.NewP(x,y)) ;
 end;
 
 begin
   Result:=TUniList<TMapCell>.Create() ;
   newways:=TUniList<TDir>.Create ;
-  nextpoints:=TUniList<TPoint>.Create ;
+  nextpoints:=TUniList<TNextPoint>.Create ;
 
   Randomize ;
 
   genWay(Result,0,-1,dUp,4+Random(4),colors[Random(Length(colors))]) ;
 
+  tekdist:=Result.Count ;
   while Result.Count<size do begin
     if nextpoints.Count=0 then Break ;
 
@@ -94,6 +98,31 @@ begin
       dir:=newways.ExtractAt(Random(newways.Count)) ;
 
       genWay(Result,np.x,np.y,dir,len,colors[Random(Length(colors))]) ;
+      Inc(tekdist,len) ;
+    end ;
+
+    // Обрезка лишних точек генерации лабиринта
+    if tekdist>=DIST_FOR_TRUNC then begin
+      tekdist:=0 ;
+
+      // Поиск самой лучшей точки - которая наиболее свободна от соседей
+      maxidx:=-1 ;
+      maxfreeways:=-1 ;
+      for i := 0 to nextpoints.Count-1 do begin
+        freeways:=0 ;
+        len:=7 ;
+        for dir in [dLeft,dRight,dUp,dDown] do
+          if isNoCrossLine(Result,nextpoints[i].x,nextpoints[i].y,dir,len) then Inc(freeways) ;
+        if maxfreeways<freeways then begin
+          maxfreeways:=freeways ;
+          maxidx:=i ;
+        end ;
+      end ;
+
+      // Её оставляем, остальные убираем
+      np:=nextpoints.ExtractAt(maxidx) ;
+      nextpoints.Clear() ;
+      nextpoints.Add(np) ;
     end ;
   end;
 
