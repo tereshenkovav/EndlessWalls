@@ -70,3 +70,4 @@ bin/
 setup/windows/*.zip
 setup/windows/*.exe
 setup/linux/*.AppImage
+data/developer.config
