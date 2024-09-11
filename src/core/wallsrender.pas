@@ -29,6 +29,7 @@ type
     constructor Create(Amap:TMap; Aw,Ah:Integer) ;
     destructor Destroy() ; override ;
     procedure SetStart(Ax,Ay:Integer; Adir:TDir) ;
+    procedure AddMarkers(Atex_markers:array of TSfmlTexture) ;
     procedure Render() ; override ;
     procedure MoveForw() ;
     procedure MoveBack() ;
@@ -46,6 +47,14 @@ const MAX_DIST = 6 ;
 implementation
 uses Math ;
 
+procedure TWallsRender.AddMarkers(Atex_markers: array of TSfmlTexture);
+var i:Integer ;
+begin
+  SetLength(tex_markers,Length(Atex_markers)) ;
+  for i := 0 to Length(Atex_markers)-1 do
+    tex_markers[i]:=Atex_markers[i] ;
+end;
+
 constructor TWallsRender.Create(Amap:TMap; Aw,Ah:Integer);
 begin
   map:=Amap ;
@@ -56,17 +65,10 @@ begin
   px:=0 ;
   pz:=-2 ;
   floorc:=0.9 ;
-  SetLength(tex_markers,3) ;
-  tex_markers[0]:=TSfmlTexture.Create('images'+PATH_SEP+'marker0.png') ;
-  tex_markers[1]:=TSfmlTexture.Create('images'+PATH_SEP+'marker1.png') ;
-  tex_markers[2]:=TSfmlTexture.Create('images'+PATH_SEP+'marker2.png') ;
 end;
 
 destructor TWallsRender.Destroy() ;
-var i:Integer ;
 begin
-  for i:=0 to Length(tex_markers)-1 do
-    tex_markers[i].Free ;
   SetLength(tex_markers,0) ;
   inherited Destroy ;
 end ;

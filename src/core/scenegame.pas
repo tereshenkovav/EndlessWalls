@@ -14,6 +14,7 @@ type
   TSceneGame = class(TScene)
   private
     ogl:TSceneOpenGL ;
+    tex_markers:array of TSfmlTexture ;
     wr:TWallsRender ;
     font:TSfmlFont ;
     arrow:TSfmlSprite ;
@@ -22,8 +23,11 @@ type
     ineffect:Boolean ;
     lastrotdir:TDir ;
     mapvertex:TSfmlVertexArray ;
+    spr_tekmarker:TSfmlSprite ;
+    tekmarkercode:Integer ;
     procedure MiniMapRebuild() ;
     procedure SaveMapToImage(const filename:string) ;
+    procedure SwitchTekMarker(code:Integer) ;
   public
     constructor Create() ;
     function Init():Boolean ; override ;
@@ -38,6 +42,7 @@ uses SfmlUtils, Math, homedir ;
 const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
       MMAPSZ = 7 ;
+      MARKERS_COUNT = 3 ;
 
 constructor TSceneGame.Create();
 begin
@@ -55,6 +60,16 @@ begin
   textInfo:=createText(font,'',24,SfmlBlack) ;
   arrow:=loadSprite('images'+PATH_SEP+'arrow.png',[sloCentered,sloNoSmooth]) ;
   ineffect:=False ;
+
+  SetLength(tex_markers,MARKERS_COUNT) ;
+  for i := 0 to MARKERS_COUNT-1 do
+    tex_markers[i]:=TSfmlTexture.Create(Format('images%smarker%d.png',[PATH_SEP,i])) ;
+  wr.AddMarkers(tex_markers) ;
+
+  spr_tekmarker:=TSfmlSprite.Create() ;
+  spr_tekmarker.Scale(0.33,0.33) ;
+  spr_tekmarker.Origin:=SfmlVector2f(64,64) ;
+  SwitchTekMarker(0) ;
 
   mapvertex:=TSfmlVertexArray.Create ;
   mapvertex.PrimitiveType:=sfQuads ;
@@ -109,6 +124,7 @@ end;
 
 function TSceneGame.FrameFunc(dt:Single; events:TUniList<TSfmlEventEx>):TSceneResult ;
 var event:TSfmlEventEx ;
+    dir:TDir ;
 begin
   Result:=Normal ;
 
@@ -140,23 +156,17 @@ begin
           MiniMapRebuild() ;
           lastrotdir:=dRight ;
         end;
-        if (event.event.key.code = sfKeyZ) then begin
-          if map.canSetMarker(wr.getX(),wr.getY(),wr.getDir(),dLeft) then begin
-            map.SetMarker(wr.getX(),wr.getY(),wr.getDir(),dLeft,0) ;
+        if (event.event.key.code in [sfKeyZ,sfKeyX,sfKeyC]) then begin
+          if event.event.key.code=sfKeyZ then dir:=dLeft else
+          if event.event.key.code=sfKeyX then dir:=dUp else dir:=dRight ;
+          if map.canSetMarker(wr.getX(),wr.getY(),wr.getDir(),dir) then begin
+            map.SetMarker(wr.getX(),wr.getY(),wr.getDir(),dir,tekmarkercode) ;
             ogl.Reset() ;
           end ;
         end;
-        if (event.event.key.code = sfKeyX) then begin
-          if map.canSetMarker(wr.getX(),wr.getY(),wr.getDir(),dUp) then begin
-            map.SetMarker(wr.getX(),wr.getY(),wr.getDir(),dUp,1) ;
-            ogl.Reset() ;
-          end ;
-        end;
-        if (event.event.key.code = sfKeyC) then begin
-          if map.canSetMarker(wr.getX(),wr.getY(),wr.getDir(),dRight) then begin
-            map.SetMarker(wr.getX(),wr.getY(),wr.getDir(),dRight,2) ;
-            ogl.Reset() ;
-          end ;
+        if (event.event.key.code in [sfKeyNum1,sfKeyNum2,sfKeyNum3,sfKeyNum4,
+          sfKeyNum5,sfKeyNum6,sfKeyNum7,sfKeyNum8,sfKeyNum9]) then begin
+          SwitchTekMarker(ord(event.event.key.code)-ord(sfKeyNum1)) ;
         end;
       end ;
   end;
@@ -190,7 +200,8 @@ begin
     dRight: arrow.Rotation:=90 ;
     dDown: arrow.Rotation:=180 ;
   end;
-  DrawSprite(arrow,896,340) ;
+  DrawSprite(arrow,846,340) ;
+  DrawSprite(spr_tekmarker,930,340) ;
 end ;
 
 procedure TSceneGame.SaveMapToImage(const filename: string);
@@ -220,7 +231,16 @@ begin
   SetLength(m2,0,0) ;
 end;
 
+procedure TSceneGame.SwitchTekMarker(code: Integer);
+begin
+  if code<Length(tex_markers) then begin
+    tekmarkercode:=code ;
+    spr_tekmarker.SetTexture(tex_markers[code],True) ;
+  end;
+end;
+
 procedure TSceneGame.UnInit() ;
+var i:Integer ;
 begin
   ogl.Free ;
   wr.Free ;
@@ -228,6 +248,10 @@ begin
   textinfo.Free ;
   font.Free ;
   mapvertex.Free ;
+
+  for i:=0 to Length(tex_markers)-1 do
+    tex_markers[i].Free ;
+  SetLength(tex_markers,0) ;
 end ;
 
 end.
