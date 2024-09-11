@@ -52,7 +52,7 @@ begin
   ogl:=TSceneOpenGL.Create(0,0,768,768,CreateSfmlColor($000000),wr) ;
   overscene:=ogl ;
   font:=TSfmlFont.Create('fonts'+PATH_SEP+'arial.ttf');
-  textInfo:=createText(font,'',24,SfmlWhite) ;
+  textInfo:=createText(font,'',24,SfmlBlack) ;
   arrow:=loadSprite('images'+PATH_SEP+'arrow.png',[sloCentered,sloNoSmooth]) ;
   ineffect:=False ;
 
@@ -179,6 +179,7 @@ end ;
 
 procedure TSceneGame.RenderFunc() ;
 begin
+  window.Clear(SfmlWhite);
   textInfo.UnicodeString:=Format('Map result: %d/%d',[map.getResult(),map.getTotalLen()]) ;
   DrawText(textInfo,800,10) ;
   window.Draw(mapvertex) ;
