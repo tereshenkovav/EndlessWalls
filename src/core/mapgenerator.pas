@@ -36,18 +36,14 @@ begin
 end;
 
 function TMapGenerator.genCells: TUniList<TMapCell>;
-var dir:TDir ;
-    newways:TUniList<TDir> ;
-    nextpoints:TUniList<TNextPoint> ;
-    np:TNextPoint ;
-    i,len:Integer ;
-    ndel:Integer ;
-    tekdist:Integer ;
-    maxidx,freeways,maxfreeways:Integer ;
-
 const
   NEXT_POINT_COUNT = 3 ;
   DIST_FOR_TRUNC = 256 ;
+  MIN_LEN = 4 ;
+  MAX_LEN = 8 ;
+
+var
+  nextpoints:TUniList<TNextPoint> ;
 
 procedure genWay(cells:TUniList<TMapCell>; x,y:Integer; dir:TDir; len:Integer;
   c:TColor) ;
@@ -60,14 +56,63 @@ begin
   if nextpoints.Count<NEXT_POINT_COUNT then nextpoints.Add(TNextPoint.NewP(x,y)) ;
 end;
 
+function getRandomLen():Integer ;
+begin
+  Result:=MIN_LEN+Random(MAX_LEN-MIN_LEN+1) ;
+end;
+
+procedure TruncNextPoints() ;
+var i:Integer ;
+    dir:TDir ;
+    maxidx,freeways,maxfreeways:Integer ;
+    np:TNextPoint ;
+begin
+  // Поиск самой лучшей точки - которая наиболее свободна от соседей
+  maxidx:=-1 ;
+  maxfreeways:=-1 ;
+  for i := 0 to nextpoints.Count-1 do begin
+    freeways:=0 ;
+    for dir in [dLeft,dRight,dUp,dDown] do
+      if isNoCrossLine(Result,nextpoints[i].x,nextpoints[i].y,dir,MAX_LEN) then Inc(freeways) ;
+    if maxfreeways<freeways then begin
+      maxfreeways:=freeways ;
+      maxidx:=i ;
+    end ;
+  end ;
+
+  // Её оставляем, остальные убираем
+  np:=nextpoints.ExtractAt(maxidx) ;
+  nextpoints.Clear() ;
+  nextpoints.Add(np) ;
+end;
+
+procedure RandomRemoveOneIfBothExist(newways_dict:TUniDictionary<TDir,Integer>;
+  dir1,dir2:TDir) ;
+begin
+  if newways_dict.ContainsKey(dir1) and newways_dict.ContainsKey(dir2) then begin
+    if Random(5)<>0 then begin
+      if Random(2)=0 then newways_dict.Remove(dir1) else newways_dict.Remove(dir2) ;
+    end;
+  end;
+end;
+
+var dir:TDir ;
+    newways_dict:TUniDictionary<TDir,Integer> ;
+    newways:TUniList<TDirLen> ;
+    i,len:Integer ;
+    ndel:Integer ;
+    dirlen:TDirLen ;
+    tekdist:Integer ;
+    np:TNextPoint ;
 begin
   Result:=TUniList<TMapCell>.Create() ;
-  newways:=TUniList<TDir>.Create ;
-  nextpoints:=TUniList<TNextPoint>.Create ;
+  newways:=TUniList<TDirLen>.Create() ;
+  newways_dict:=TUniDictionary<TDir,Integer>.Create() ;
+  nextpoints:=TUniList<TNextPoint>.Create() ;
 
   Randomize ;
 
-  genWay(Result,0,-1,dUp,4+Random(4),colors[Random(Length(colors))]) ;
+  genWay(Result,0,-1,dUp,getRandomLen(),colors[Random(Length(colors))]) ;
 
   tekdist:=Result.Count ;
   while Result.Count<size do begin
@@ -75,18 +120,19 @@ begin
 
     np:=nextpoints.ExtractAt(Random(nextpoints.Count)) ;
 
-    newways.Clear() ;
-    len:=4+Random(4) ;
-    for dir in [dLeft,dRight,dUp,dDown] do
-      if isNoCrossLine(Result,np.x,np.y,dir,len) then newways.Add(dir) ;
+    newways_dict.Clear() ;
+    for dir in [dLeft,dRight,dUp,dDown] do begin
+      len:=getRandomLen() ;
+      if isNoCrossLine(Result,np.x,np.y,dir,len) then newways_dict.Add(dir,len) ;
+    end ;
 
     // Уменьшаем вероятность X-перекрестков
-    if newways.Contains(dLeft) and newways.Contains(dRight) then
-      if Random(5)<>0 then
-        if Random(2)=0 then newways.Remove(dLeft) else newways.Remove(dLeft) ;
-    if newways.Contains(dUp) and newways.Contains(dDown) then
-      if Random(5)<>0 then
-        if Random(2)=0 then newways.Remove(dUp) else newways.Remove(dDown) ;
+    RandomRemoveOneIfBothExist(newways_dict,dLeft,dRight) ;
+    RandomRemoveOneIfBothExist(newways_dict,dUp,dDown) ;
+
+    newways.Clear() ;
+    for dir in newways_dict.AllKeys do
+      newways.Add(TDirLen.NewP(dir,newways_dict[dir])) ;
 
     if newways.Count>1 then begin
       ndel:=Random(newways.Count) ;
@@ -95,37 +141,22 @@ begin
     end ;
 
     while newways.Count>0 do begin
-      dir:=newways.ExtractAt(Random(newways.Count)) ;
+      dirlen:=newways.ExtractAt(Random(newways.Count)) ;
 
-      genWay(Result,np.x,np.y,dir,len,colors[Random(Length(colors))]) ;
-      Inc(tekdist,len) ;
+      genWay(Result,np.x,np.y,dirlen.dir,dirlen.len,colors[Random(Length(colors))]) ;
+      Inc(tekdist,dirlen.len) ;
     end ;
 
     // Обрезка лишних точек генерации лабиринта
     if tekdist>=DIST_FOR_TRUNC then begin
       tekdist:=0 ;
-
-      // Поиск самой лучшей точки - которая наиболее свободна от соседей
-      maxidx:=-1 ;
-      maxfreeways:=-1 ;
-      for i := 0 to nextpoints.Count-1 do begin
-        freeways:=0 ;
-        len:=7 ;
-        for dir in [dLeft,dRight,dUp,dDown] do
-          if isNoCrossLine(Result,nextpoints[i].x,nextpoints[i].y,dir,len) then Inc(freeways) ;
-        if maxfreeways<freeways then begin
-          maxfreeways:=freeways ;
-          maxidx:=i ;
-        end ;
-      end ;
-
-      // Её оставляем, остальные убираем
-      np:=nextpoints.ExtractAt(maxidx) ;
-      nextpoints.Clear() ;
-      nextpoints.Add(np) ;
+      TruncNextPoints() ;
     end ;
   end;
 
+  newways.Free ;
+  newways_dict.Free ;
+  nextpoints.Free ;
 end;
 
 function TMapGenerator.isPointExist(const cells: TUniList<TMapCell>; x, y: Integer): Boolean;

@@ -9,6 +9,13 @@ uses
 type
   TDir = (dLeft,dUp,dRight,dDown) ;
 
+  TDirLen = record
+    dir:TDir ;
+    len:Integer ;
+    class operator Equal(a: TDirLen; b: TDirLen): Boolean ;
+    class function NewP(Adir:TDir;Alen:Integer):TDirLen ; static ;
+  end ;
+
   T2DMap = array of array of Boolean ;
 
   TColor = record
@@ -20,7 +27,7 @@ type
   TNextPoint = record
     x:Integer ;
     y:Integer ;
-    class operator Equal(a: TNextPoint; b: TNextPoint): Boolean;
+    class operator Equal(a: TNextPoint; b: TNextPoint): Boolean ;
     class function NewP(Ax,Ay:Integer):TNextPoint ; static ;
   end ;
 
@@ -83,13 +90,21 @@ type
 implementation
 uses MapGenerator ;
 
+const
+  MAX_TRY_COUNT=20 ;
+  MIN_PROCENT_FOR_SAVE = 0.8 ;
+
 constructor TMap.Create(size:Integer);
+var i:Integer ;
 begin
   with TMapGenerator.Create(size) do begin
-    freecells:=genCells() ;
+    for i := 0 to MAX_TRY_COUNT-1 do begin
+      if Assigned(freecells) then freecells.Free ;
+      freecells:=genCells() ;
+      if freecells.Count>=size*MIN_PROCENT_FOR_SAVE then Break ;
+    end;
     Free ;
   end;
-
   markers:=TUniList<TMarker>.Create ;
 end;
 
@@ -425,6 +440,19 @@ class function TNextPoint.NewP(Ax, Ay: Integer): TNextPoint;
 begin
   Result.x:=Ax ;
   Result.y:=Ay ;
+end;
+
+{ TDirLen }
+
+class operator TDirLen.Equal(a, b: TDirLen): Boolean;
+begin
+  Result:=(a.dir=b.dir)and(a.len=b.len) ;
+end;
+
+class function TDirLen.NewP(Adir: TDir; Alen: Integer): TDirLen;
+begin
+  Result.dir:=Adir ;
+  Result.len:=Alen ;
 end;
 
 end.
