@@ -33,7 +33,7 @@ type
   end;
 
 implementation
-uses SfmlUtils, Math ;
+uses SfmlUtils, Math, homedir ;
 
 const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
@@ -76,7 +76,8 @@ begin
 
   MiniMapRebuild() ;
 
-  SaveMapToImage('map.png') ;
+  THomeDir.createDirInHomeIfNeed('EndlessWalls') ;
+  SaveMapToImage(THomeDir.getFileNameInHome('EndlessWalls','map.png')) ;
 
   Result:=True ;
 end ;
