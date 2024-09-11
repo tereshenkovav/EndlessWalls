@@ -12,7 +12,7 @@ type
 implementation
 uses SysUtils,
   SfmlWindow,
-  Game, Scene, SceneGame, Helpers, Logger ;
+  Game, Scene, SceneLoader, Helpers, Logger ;
 
 procedure TMain.Run() ;
 var game:TGame ;
@@ -21,7 +21,7 @@ begin
   game:=TGame.Create(1024,768,'EndlessWalls',
     'EndlessWalls','images'+PATH_SEP+'icon.png') ;
   if FileExists('developer.config') then game.enableFPSInTitle(True) ;
-  game.Run(TSceneGame.Create()) ;
+  game.Run(TSceneLoader.Create()) ;
   game.Free ;
 end ;
 

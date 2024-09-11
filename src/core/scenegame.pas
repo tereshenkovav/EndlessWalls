@@ -29,7 +29,7 @@ type
     procedure SaveMapToImage(const filename:string) ;
     procedure SwitchTekMarker(code:Integer) ;
   public
-    constructor Create() ;
+    constructor Create(Amap:TMap) ;
     function Init():Boolean ; override ;
     function FrameFunc(dt:Single; events:TUniList<TSfmlEventEx>):TSceneResult ; override ;
     procedure RenderFunc() ; override ;
@@ -44,14 +44,14 @@ const MMAPRES = 33 ;
       MMAPSZ = 7 ;
       MARKERS_COUNT = 3 ;
 
-constructor TSceneGame.Create();
+constructor TSceneGame.Create(Amap:TMap);
 begin
+  map:=Amap ;
 end;
 
 function TSceneGame.Init():Boolean ;
 var i,j,p:Integer ;
 begin
-  map:=TMap.Create(4096) ;
   wr:=TWallsRender.Create(map,768,768) ;
   wr.SetStart(0,0,dUp) ;
   ogl:=TSceneOpenGL.Create(0,0,768,768,CreateSfmlColor($000000),wr) ;

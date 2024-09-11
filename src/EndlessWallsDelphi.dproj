@@ -127,6 +127,7 @@
         <DCCReference Include="core\map.pas"/>
         <DCCReference Include="core\wallsrender.pas"/>
         <DCCReference Include="core\mapgenerator.pas"/>
+        <DCCReference Include="core\sceneloader.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
