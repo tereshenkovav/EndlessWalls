@@ -55,11 +55,13 @@ type
   TMap = class
   private
     freecells:TUniList<TMapCell> ;
+    idxcells:TUniDictionary<Integer,Integer> ;
     markers:TUniList<TMarker> ;
     function getColor(x,y:Integer):TColor ;
     procedure setOpened(x, y: Integer);
     procedure setDark(x, y: Integer);
     function isPointExist(x,y:Integer):Boolean ;
+    function getIndexByXY(x,y:Integer):Integer ;
   public
     class procedure UpdateXYByDir(var x:Integer; var y:Integer; dir:TDir; delta:Integer=1) ;
     class procedure RollDirLeft(var dir:TDir) ;
@@ -94,6 +96,12 @@ const
   MAX_TRY_COUNT=20 ;
   MIN_PROCENT_FOR_SAVE = 0.8 ;
 
+// Лучше использовать полноценный индекс через 64-битное значение или TPoint
+function XY2Int(x,y:Integer):Integer ;
+begin
+  Result:=x*10000+y ;
+end;
+
 constructor TMap.Create(size:Integer);
 var i:Integer ;
 begin
@@ -105,12 +113,18 @@ begin
     end;
     Free ;
   end;
+
+  idxcells:=TUniDictionary<Integer,Integer>.Create() ;
+  for i:=0 to freecells.Count-1 do
+    idxcells.Add(XY2Int(freecells[i].x,freecells[i].y),i) ;
+
   markers:=TUniList<TMarker>.Create ;
 end;
 
 destructor TMap.Destroy() ;
 begin
   freecells.Free ;
+  idxcells.Free ;
   markers.Free ;
   inherited Destroy ;
 end ;
@@ -133,27 +147,26 @@ begin
 end;
 
 function TMap.getColor(x, y: Integer): TColor;
-var p:TMapCell ;
+var idx:Integer ;
 begin
   Result.r:=1 ;
   Result.g:=1 ;
   Result.b:=1 ;
-  for p in freecells do
-    if (p.x=x)and(p.y=y) then Exit(p.c) ;
+  idx:=getIndexByXY(x,y) ;
+  if idx<>-1 then Result:=freecells[idx].c ;
 end;
 
 procedure TMap.setDark(x, y: Integer);
-var i:Integer ;
+var idx:Integer ;
     p:TMapCell ;
 begin
-  for i:=0 to freecells.Count-1 do
-    if (freecells[i].x=x)and(freecells[i].y=y) then begin
-      p:=freecells[i] ;
-      if p.opened then Exit ;
-      p.dark:=True ;
-      freecells[i]:=p ;
-      Exit ;
-    end ;
+  idx:=getIndexByXY(x,y) ;
+  if idx<>-1 then begin
+    p:=freecells[idx] ;
+    if p.opened then Exit ;
+    p.dark:=True ;
+    freecells[idx]:=p ;
+  end ;
 end;
 
 function TMap.canSetMarker(x, y: Integer; dir, markerdir: TDir): Boolean;
@@ -172,17 +185,16 @@ begin
 end;
 
 procedure TMap.setOpened(x, y: Integer);
-var i:Integer ;
+var idx:Integer ;
     p:TMapCell ;
 begin
-  for i:=0 to freecells.Count-1 do
-    if (freecells[i].x=x)and(freecells[i].y=y) then begin
-      p:=freecells[i] ;
-      p.opened:=True ;
-      p.dark:=False ;
-      freecells[i]:=p ;
-      Exit ;
-    end ;
+  idx:=getIndexByXY(x,y) ;
+  if idx<>-1 then begin
+    p:=freecells[idx] ;
+    p.opened:=True ;
+    p.dark:=False ;
+    freecells[idx]:=p ;
+  end ;
 end;
 
 function TMap.getColorAtDist(x, y: Integer; dir: TDir; dist: Integer): TColor;
@@ -241,6 +253,14 @@ begin
   end;
 end;
 
+function TMap.getIndexByXY(x, y: Integer): Integer;
+begin
+  if idxcells.ContainsKey(XY2Int(x,y)) then
+    Result:=idxcells[XY2Int(x,y)]
+  else
+    Result:=-1 ;
+end;
+
 // Реализация неоптимальна, нужно вести учет открытых ячеек в момент setOpened
 function TMap.getResult: Integer;
 var p:TMapCell ;
@@ -269,27 +289,22 @@ begin
 end;
 
 function TMap.isPointDark(x, y: Integer): Boolean;
-var p:TMapCell ;
+var idx:Integer ;
 begin
-  Result:=False ;
-  for p in freecells do
-    if (p.x=x)and(p.y=y) then Exit(p.dark) ;
+  idx:=getIndexByXY(x,y) ;
+  if idx=-1 then Result:=False else Result:=freecells[idx].dark ;
 end;
 
 function TMap.isPointExist(x, y: Integer): Boolean;
-var p:TMapCell ;
 begin
-  Result:=False ;
-  for p in freecells do
-    if (p.x=x)and(p.y=y) then Exit(True) ;
+  Result:=getIndexByXY(x,y)<>-1 ;
 end;
 
 function TMap.isPointOpened(x, y: Integer): Boolean;
-var p:TMapCell ;
+var idx:Integer ;
 begin
-  Result:=False ;
-  for p in freecells do
-    if (p.x=x)and(p.y=y) then Exit(p.opened) ;
+  idx:=getIndexByXY(x,y) ;
+  if idx=-1 then Result:=False else Result:=freecells[idx].opened ;
 end;
 
 function TMap.isWallLeftAtDist(x, y: Integer; dir: TDir;
