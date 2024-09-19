@@ -5,22 +5,9 @@ interface
 uses
   Classes, SysUtils,
   SfmlSystem,SfmlWindow,SfmlGraphics,
-  Scene, Helpers ;
+  Scene, Helpers, TaskBGRunner ;
 
 type
-  TBackgroundTask = class(TThread)
-  private
-    ready:Boolean ;
-    size:Integer ;
-    map:TObject ;
-  protected
-    procedure Execute; override ;
-  public
-    constructor Create(Asize:Integer) ;
-    function getResult():TObject ;
-    function isReady():Boolean ;
-  end;
-
   { TSceneLoader }
 
   TSceneLoader = class(TScene)
@@ -29,7 +16,8 @@ type
     font:TSfmlFont ;
     textLoad:TSfmlText ;
     str:string ;
-    task:TBackgroundTask ;
+    runner:TTaskBGRunner ;
+    function Run(pg:IProgressGetter):TObject ;
   public
     function Init():Boolean ; override ;
     function FrameFunc(dt:Single; events:TUniList<TSfmlEventEx>):TSceneResult ; override ;
@@ -43,29 +31,31 @@ uses SceneGame, Map, SfmlUtils ;
 function TSceneLoader.Init():Boolean ;
 begin
   font:=TSfmlFont.Create('fonts'+PATH_SEP+'arial.ttf');
-  str:='Generate map' ;
-  textLoad:=createText(font,str,24,SfmlWhite) ;
+  textLoad:=createText(font,'',24,SfmlWhite) ;
+  str:='' ;
 
-  task:=TBackgroundTask.Create(4096) ;
+  runner:=TTaskBGRunner.Create() ;
 
   Result:=True ;
 end ;
 
 function TSceneLoader.FrameFunc(dt:Single; events:TUniList<TSfmlEventEx>):TSceneResult ;
+var basestr:string ;
 begin
   Result:=Normal ;
 
-  if task.Suspended then task.Start() ;
+  runner.RunTaskIfNot(Run) ;
+  basestr:=runner.getProgressMessage() ;
 
   t:=t+dt ;
   if t>0.5 then begin
     t:=0 ;
     str:=str+'.' ;
-    textLoad.UnicodeString:=str ;
+    textLoad.UnicodeString:=basestr+str ;
   end;
 
-  if task.isReady() then begin
-    nextscene:=TSceneGame.Create(TMap(task.getResult())) ;
+  if runner.isTaskReady() then begin
+    nextscene:=TSceneGame.Create(TMap(runner.getResult())) ;
     Exit(TSceneResult.Switch) ;
   end;
 end ;
@@ -75,35 +65,16 @@ begin
   drawText(textLoad,30,728) ;
 end ;
 
+function TSceneLoader.Run(pg: IProgressGetter): TObject;
+begin
+  pg.SetMessage('Map generation') ;
+  Result:=TMap.Create(4096) ;
+end;
+
 procedure TSceneLoader.UnInit() ;
 begin
   font.Free ;
   textLoad.Free ;
 end ;
-
-{ TBackgroundTask }
-
-constructor TBackgroundTask.Create(Asize: Integer);
-begin
-  inherited Create(True) ;
-  size:=Asize ;
-  ready:=False ;
-end;
-
-procedure TBackgroundTask.Execute;
-begin
-  map:=TMap.Create(size) ;
-  ready:=True ;
-end;
-
-function TBackgroundTask.getResult: TObject;
-begin
-  Result:=map ;
-end;
-
-function TBackgroundTask.isReady: Boolean;
-begin
-  Result:=ready ;
-end;
 
 end.
