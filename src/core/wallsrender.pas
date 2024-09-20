@@ -16,6 +16,7 @@ type
   TWallsRender = class(TOpenGLRender)
   private
     tex_markers:array of TSfmlTexture ;
+    tex_objects:array of TSfmlTexture ;
     w,h:Integer ;
     x,y:Integer ;
     px,pz:Single ;
@@ -30,6 +31,7 @@ type
     destructor Destroy() ; override ;
     procedure SetStart(Ax,Ay:Integer; Adir:TDir) ;
     procedure AddMarkers(Atex_markers:array of TSfmlTexture) ;
+    procedure AddObjects(Atex_objects:array of TSfmlTexture) ;
     procedure Render() ; override ;
     procedure MoveForw() ;
     procedure MoveBack() ;
@@ -55,6 +57,14 @@ begin
     tex_markers[i]:=Atex_markers[i] ;
 end;
 
+procedure TWallsRender.AddObjects(Atex_objects: array of TSfmlTexture);
+var i:Integer ;
+begin
+  SetLength(tex_objects,Length(Atex_objects)) ;
+  for i := 0 to Length(Atex_objects)-1 do
+    tex_objects[i]:=Atex_objects[i] ;
+end;
+
 constructor TWallsRender.Create(Amap:TMap; Aw,Ah:Integer);
 begin
   map:=Amap ;
@@ -70,6 +80,7 @@ end;
 destructor TWallsRender.Destroy() ;
 begin
   SetLength(tex_markers,0) ;
+  SetLength(tex_objects,0) ;
   inherited Destroy ;
 end ;
 
@@ -182,6 +193,23 @@ begin
         glVertex3f(0.5, 0.5, 0.99);
         glTexCoord2f(1.0, 0.0);
         glVertex3f(0.5, -0.5, 0.99);
+      glEnd();
+      SfmlTextureBind(nil) ;
+end ;
+
+procedure renderObject(tex_object:TSfmlTexture; pc:Single) ;
+begin
+   glColor3f(pc, pc, pc);
+      tex_object.Bind() ;
+      glBegin(GL_POLYGON);
+        glTexCoord2f(0.0, 0.0);
+        glVertex3f(-0.5, -0.0, 0.0);
+        glTexCoord2f(0.0, 1.0);
+        glVertex3f(-0.5, 1.0, 0.0);
+        glTexCoord2f(1.0, 1.0);
+        glVertex3f(0.5, 1.0, 0.0);
+        glTexCoord2f(1.0, 0.0);
+        glVertex3f(0.5, -0.0, 0.0);
       glEnd();
       SfmlTextureBind(nil) ;
 end ;
@@ -317,6 +345,9 @@ begin
           xn:=x ; yn:=y ;
           TMap.UpdateXYByDir(xn,yn,dir,d) ;
           if map.isMarkerAt(xn,yn,dir,code) then frontMarker(tex_markers[code],pc) ;
+
+          if map.isObjectAt(xn,yn,code) then renderObject(tex_objects[code],pc) ;
+
           break ;
         end ;
 

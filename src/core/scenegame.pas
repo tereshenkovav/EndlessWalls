@@ -15,6 +15,7 @@ type
   private
     ogl:TSceneOpenGL ;
     tex_markers:array of TSfmlTexture ;
+    tex_objects:array of TSfmlTexture ;
     wr:TWallsRender ;
     font:TSfmlFont ;
     arrow:TSfmlSprite ;
@@ -43,6 +44,7 @@ const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
       MMAPSZ = 7 ;
       MARKERS_COUNT = 3 ;
+      OBJECTS_COUNT = 3 ;
 
 constructor TSceneGame.Create(Amap:TMap);
 begin
@@ -65,6 +67,11 @@ begin
   for i := 0 to MARKERS_COUNT-1 do
     tex_markers[i]:=TSfmlTexture.Create(Format('images%smarker%d.png',[PATH_SEP,i])) ;
   wr.AddMarkers(tex_markers) ;
+
+  SetLength(tex_objects,OBJECTS_COUNT) ;
+  for i := 0 to OBJECTS_COUNT-1 do
+    tex_objects[i]:=TSfmlTexture.Create(Format('images%sobject%.2d.png',[PATH_SEP,i])) ;
+  wr.AddObjects(tex_objects) ;
 
   spr_tekmarker:=TSfmlSprite.Create() ;
   spr_tekmarker.Scale(0.33,0.33) ;

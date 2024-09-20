@@ -50,6 +50,14 @@ type
     class function NewP(Ax,Ay:Integer; Adir:TDir; Acode:Integer):TMarker ; static ;
   end ;
 
+  TQuestObject = record
+    x:Integer ;
+    y:Integer ;
+    code:Integer ;
+    class operator Equal(a: TQuestObject; b: TQuestObject): Boolean;
+    class function NewP(Ax,Ay:Integer; Acode:Integer):TQuestObject ; static ;
+  end ;
+
   { TMap }
 
   TMap = class
@@ -57,6 +65,7 @@ type
     freecells:TUniList<TMapCell> ;
     idxcells:TUniDictionary<Integer,Integer> ;
     markers:TUniList<TMarker> ;
+    objects:TUniList<TQuestObject> ;
     function getColor(x,y:Integer):TColor ;
     procedure setOpened(x, y: Integer);
     procedure setDark(x, y: Integer);
@@ -71,6 +80,7 @@ type
     class function GetDirStr(dir:TDir):string ;
     constructor Create(size:Integer) ;
     destructor Destroy() ; override ;
+    procedure PopulateObjects(count:Integer) ;
     function getResult():Integer ;
     function getTotalLen():Integer ;
     function isPointOpened(x,y:Integer):Boolean ;
@@ -84,6 +94,7 @@ type
     function canSeeAtToDir(x,y:Integer; dir:TDir):Boolean ;
     function canSetMarker(x,y:Integer; dir,markerdir:TDir):Boolean ;
     function isMarkerAt(x,y:Integer; dir:TDir; var markercode:Integer):Boolean ;
+    function isObjectAt(x,y:Integer; var objectcode:Integer):Boolean ;
     procedure UpdateOpenedByPosDirDist(x,y:Integer; dir:TDir; dist:Integer) ;
     procedure SetMarker(x,y:Integer; dir,markerdir:TDir; code:Integer) ;
     function SaveTo2D(var sx:Integer; var sy:Integer; var startx:Integer; var starty:Integer):T2DMap ;
@@ -119,6 +130,7 @@ begin
     idxcells.Add(XY2Int(freecells[i].x,freecells[i].y),i) ;
 
   markers:=TUniList<TMarker>.Create ;
+  objects:=TUniList<TQuestObject>.Create ;
 end;
 
 destructor TMap.Destroy() ;
@@ -126,6 +138,7 @@ begin
   freecells.Free ;
   idxcells.Free ;
   markers.Free ;
+  objects.Free ;
   inherited Destroy ;
 end ;
 
@@ -288,6 +301,17 @@ begin
     end;
 end;
 
+function TMap.isObjectAt(x, y: Integer; var objectcode: Integer): Boolean;
+var o:TQuestObject ;
+begin
+  Result:=False ;
+  for o in objects do
+    if (o.x=x)and(o.y=y) then begin
+      objectcode:=o.code ;
+      Exit(True) ;
+    end;
+end;
+
 function TMap.isPointDark(x, y: Integer): Boolean;
 var idx:Integer ;
 begin
@@ -323,6 +347,35 @@ begin
   RollDirRight(dir) ;
   UpdateXYByDir(x,y,dir,1) ;
   Result:=not isPointExist(x,y)
+end;
+
+procedure TMap.PopulateObjects(count: Integer);
+var c:TMapCell ;
+    d:TDir ;
+    cnt:Integer ;
+    xn,yn:Integer ;
+    list:TUniList<TNextPoint> ;
+    i:Integer ;
+    np:TNextPoint ;
+begin
+  list:=TUniList<TNextPoint>.Create() ;
+  for c in freecells do begin
+    cnt:=0 ;
+    for d in [dLeft,dRight,dUp,dDown] do begin
+      xn:=c.x ; yn:=c.y ;
+      TMap.UpdateXYByDir(xn,yn,d) ;
+      if isPointExist(xn,yn) then Inc(cnt) ;
+    end;
+    if (cnt=1)and((c.x<>0)and(c.y<>0)) then list.Add(TNextPoint.NewP(c.x,c.y)) ;
+  end;
+
+  for i := 0 to count-1 do begin
+    if list.Count=0 then break ;
+    np:=list.ExtractAt(Random(list.Count)) ;
+    objects.Add(TQuestObject.NewP(np.x,np.y,i)) ;
+  end;
+
+  list.Free ;
 end;
 
 class procedure TMap.RollDirLeft(var dir: TDir);
@@ -468,6 +521,20 @@ class function TDirLen.NewP(Adir: TDir; Alen: Integer): TDirLen;
 begin
   Result.dir:=Adir ;
   Result.len:=Alen ;
+end;
+
+{ TQuestObject }
+
+class operator TQuestObject.Equal(a, b: TQuestObject): Boolean;
+begin
+  Result:=(a.x=b.x)and(a.y=b.y) ;
+end;
+
+class function TQuestObject.NewP(Ax, Ay, Acode: Integer): TQuestObject;
+begin
+  Result.x:=Ax ;
+  Result.y:=Ay ;
+  Result.code:=Acode ;
 end;
 
 end.
