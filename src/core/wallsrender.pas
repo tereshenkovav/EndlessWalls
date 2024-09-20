@@ -42,6 +42,7 @@ type
     function getDir():TDir ;
     procedure Update(dt:Single) ;
     function isInEffect():Boolean ;
+    function getFrontObjectCode(var code:Integer): Boolean;
   end;
 
 const MAX_DIST = 6 ;
@@ -87,6 +88,12 @@ end ;
 function TWallsRender.getDir: TDir;
 begin
   Result:=dir ;
+end;
+
+function TWallsRender.getFrontObjectCode(var code:Integer): Boolean;
+begin
+  Result:=map.isObjectAt(x,y,code) ;
+  if Result then map.clearObject(x,y) ;
 end;
 
 function TWallsRender.getX: Integer;

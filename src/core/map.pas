@@ -81,6 +81,7 @@ type
     constructor Create(size:Integer) ;
     destructor Destroy() ; override ;
     procedure PopulateObjects(count:Integer) ;
+    procedure ClearObject(x,y:Integer) ;
     function getResult():Integer ;
     function getTotalLen():Integer ;
     function isPointOpened(x,y:Integer):Boolean ;
@@ -111,6 +112,16 @@ const
 function XY2Int(x,y:Integer):Integer ;
 begin
   Result:=x*10000+y ;
+end;
+
+procedure TMap.ClearObject(x, y: Integer);
+var i:Integer ;
+begin
+  for i := 0 to objects.Count-1 do
+    if (objects[i].x=x)and(objects[i].y=y) then begin
+      objects.Delete(i) ;
+      break ;
+    end;
 end;
 
 constructor TMap.Create(size:Integer);

@@ -25,6 +25,8 @@ type
     lastrotdir:TDir ;
     mapvertex:TSfmlVertexArray ;
     spr_tekmarker:TSfmlSprite ;
+    spr_objects:array of TSfmlSprite ;
+    collection:TUniDictionary<Integer,Boolean> ;
     tekmarkercode:Integer ;
     procedure MiniMapRebuild() ;
     procedure SaveMapToImage(const filename:string) ;
@@ -77,6 +79,18 @@ begin
   spr_tekmarker.Scale(0.33,0.33) ;
   spr_tekmarker.Origin:=SfmlVector2f(64,64) ;
   SwitchTekMarker(0) ;
+
+  SetLength(spr_objects,OBJECTS_COUNT) ;
+  for i := 0 to OBJECTS_COUNT-1 do begin
+    spr_objects[i]:=TSfmlSprite.Create() ;
+    spr_objects[i].Scale(0.25,0.25) ;
+    spr_objects[i].SetTexture(tex_objects[i],True) ;
+    spr_objects[i].Origin:=SfmlVector2f(32,32) ;
+  end;
+
+  collection:=TUniDictionary<Integer,Boolean>.Create() ;
+  for i := 0 to OBJECTS_COUNT-1 do
+    collection.Add(i,False) ;
 
   mapvertex:=TSfmlVertexArray.Create ;
   mapvertex.PrimitiveType:=sfQuads ;
@@ -132,6 +146,7 @@ end;
 function TSceneGame.FrameFunc(dt:Single; events:TUniList<TSfmlEventEx>):TSceneResult ;
 var event:TSfmlEventEx ;
     dir:TDir ;
+    code:Integer ;
 begin
   Result:=Normal ;
 
@@ -143,6 +158,8 @@ begin
         end;
         if (event.event.key.code = sfKeyUp) then begin
           wr.MoveForw() ;
+          if wr.getFrontObjectCode(code) then
+            collection[code]:=True ;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
@@ -195,6 +212,8 @@ begin
 end ;
 
 procedure TSceneGame.RenderFunc() ;
+var
+  i: Integer;
 begin
   window.Clear(SfmlWhite);
   textInfo.UnicodeString:=Format('Map result: %d/%d',[map.getResult(),map.getTotalLen()]) ;
@@ -209,6 +228,11 @@ begin
   end;
   DrawSprite(arrow,846,340) ;
   DrawSprite(spr_tekmarker,930,340) ;
+
+  for i := 0 to OBJECTS_COUNT-1 do begin
+    spr_objects[i].Color:=IfThen(collection[i],SfmlWhite,SfmlBlack) ;
+    DrawSprite(spr_objects[i],800+70*i,440) ;
+  end;
 end ;
 
 procedure TSceneGame.SaveMapToImage(const filename: string);
