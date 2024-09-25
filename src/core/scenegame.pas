@@ -165,6 +165,8 @@ begin
         end;
         if (event.event.key.code = sfKeyDown) then begin
           wr.MoveBack() ;
+          if wr.getFrontObjectCode(code) then
+            collection[code]:=True ;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
