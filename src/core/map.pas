@@ -80,7 +80,7 @@ type
     class function GetDirStr(dir:TDir):string ;
     constructor Create(size:Integer) ;
     destructor Destroy() ; override ;
-    procedure PopulateObjects(count:Integer) ;
+    procedure PopulateObjects(count,all:Integer) ;
     procedure ClearObject(x,y:Integer) ;
     function getResult():Integer ;
     function getTotalLen():Integer ;
@@ -99,7 +99,7 @@ type
     procedure UpdateOpenedByPosDirDist(x,y:Integer; dir:TDir; dist:Integer) ;
     procedure SetMarker(x,y:Integer; dir,markerdir:TDir; code:Integer) ;
     function SaveTo2D(var sx:Integer; var sy:Integer; var startx:Integer; var starty:Integer):T2DMap ;
-    function getObjectsCount():Integer ;
+    function getObjectsCodes():TUniDictionary<Integer,Boolean> ;
   end;
 
 implementation
@@ -286,9 +286,12 @@ begin
     Result:=-1 ;
 end;
 
-function TMap.getObjectsCount: Integer;
+function TMap.getObjectsCodes: TUniDictionary<Integer, Boolean>;
+var obj:TQuestObject ;
 begin
-  Result:=objects.Count ;
+  Result:=TUniDictionary<Integer,Boolean>.Create() ;
+  for obj in objects do
+    Result.Add(obj.code,False) ;
 end;
 
 // Реализация неоптимальна, нужно вести учет открытых ячеек в момент setOpened
@@ -366,14 +369,15 @@ begin
   Result:=not isPointExist(x,y)
 end;
 
-procedure TMap.PopulateObjects(count: Integer);
+procedure TMap.PopulateObjects(count,all: Integer);
 var c:TMapCell ;
     d:TDir ;
-    cnt:Integer ;
+    cnt,code:Integer ;
     xn,yn:Integer ;
     list:TUniList<TNextPoint> ;
     i:Integer ;
     np:TNextPoint ;
+    codes:TUniList<Integer> ;
 begin
   list:=TUniList<TNextPoint>.Create() ;
   for c in freecells do begin
@@ -386,13 +390,19 @@ begin
     if (cnt=1)and( not ((c.x=0)and(c.y=0))) then list.Add(TNextPoint.NewP(c.x,c.y)) ;
   end;
 
+  codes:=TUniList<Integer>.Create() ;
+  for i := 0 to all-1 do
+    codes.Add(i) ;
+
   for i := 0 to count-1 do begin
     if list.Count=0 then break ;
     np:=list.ExtractAt(Random(list.Count)) ;
-    objects.Add(TQuestObject.NewP(np.x,np.y,i)) ;
+    code:=codes.ExtractAt(Random(codes.Count)) ;
+    objects.Add(TQuestObject.NewP(np.x,np.y,code)) ;
   end;
 
   list.Free ;
+  codes.Free ;
 end;
 
 class procedure TMap.RollDirLeft(var dir: TDir);

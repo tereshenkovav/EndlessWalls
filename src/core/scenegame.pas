@@ -26,9 +26,8 @@ type
     mapvertex:TSfmlVertexArray ;
     spr_tekmarker:TSfmlSprite ;
     spr_objects:array of TSfmlSprite ;
-    collection:TUniDictionary<Integer,Boolean> ;
+    objects_on_search:TUniDictionary<Integer,Boolean> ;
     tekmarkercode:Integer ;
-    objects_on_search:Integer ;
     procedure MiniMapRebuild() ;
     procedure SaveMapToImage(const filename:string) ;
     procedure SwitchTekMarker(code:Integer) ;
@@ -41,13 +40,13 @@ type
   end;
 
 implementation
-uses SfmlUtils, Math, homedir ;
+uses Math,
+  SfmlUtils, homedir,
+  Constants ;
 
 const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
       MMAPSZ = 7 ;
-      MARKERS_COUNT = 3 ;
-      OBJECTS_COUNT = 12 ;
 
 constructor TSceneGame.Create(Amap:TMap);
 begin
@@ -89,10 +88,6 @@ begin
     spr_objects[i].Origin:=SfmlVector2f(tex_objects[i].Size.X/2,tex_objects[i].Size.X/2) ;
   end;
 
-  collection:=TUniDictionary<Integer,Boolean>.Create() ;
-  for i := 0 to OBJECTS_COUNT-1 do
-    collection.Add(i,False) ;
-
   mapvertex:=TSfmlVertexArray.Create ;
   mapvertex.PrimitiveType:=sfQuads ;
   mapvertex.Resize(MMAPRES*MMAPRES*4+4);
@@ -116,7 +111,7 @@ begin
   THomeDir.createDirInHomeIfNeed('EndlessWalls') ;
   SaveMapToImage(THomeDir.getFileNameInHome('EndlessWalls','map.png')) ;
 
-  objects_on_search:=map.getObjectsCount() ;
+  objects_on_search:=map.getObjectsCodes() ;
 
   Result:=True ;
 end ;
@@ -162,14 +157,14 @@ begin
         if (event.event.key.code = sfKeyUp) then begin
           wr.MoveForw() ;
           if wr.getFrontObjectCode(code) then
-            collection[code]:=True ;
+            objects_on_search[code]:=True ;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
         if (event.event.key.code = sfKeyDown) then begin
           wr.MoveBack() ;
           if wr.getFrontObjectCode(code) then
-            collection[code]:=True ;
+            objects_on_search[code]:=True ;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
@@ -217,7 +212,7 @@ begin
 end ;
 
 procedure TSceneGame.RenderFunc() ;
-var i,x,y:Integer;
+var code,p,x,y:Integer;
 begin
   window.Clear(SfmlWhite);
   textInfo.UnicodeString:=Format('Map result: %d/%d',[map.getResult(),map.getTotalLen()]) ;
@@ -235,14 +230,16 @@ begin
 
   x:=820 ;
   y:=440 ;
-  for i := 0 to objects_on_search-1 do begin
-    spr_objects[i].Color:=IfThen(collection[i],SfmlWhite,SfmlBlack) ;
-    DrawSprite(spr_objects[i],x,y) ;
+  p:=0 ;
+  for code in objects_on_search.AllKeys do begin
+    spr_objects[code].Color:=IfThen(objects_on_search[code],SfmlWhite,SfmlBlack) ;
+    DrawSprite(spr_objects[code],x,y) ;
     Inc(x,80) ;
-    if i mod 3 = 2 then begin
+    if p mod 3 = 2 then begin
       x:=820 ;
       Inc(y,90) ;
     end;
+    Inc(p) ;
   end;
 end ;
 

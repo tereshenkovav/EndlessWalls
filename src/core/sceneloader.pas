@@ -26,7 +26,8 @@ type
   end;
 
 implementation
-uses SceneGame, Map, SfmlUtils ;
+uses SfmlUtils,
+  SceneGame, Map, Constants ;
 
 function TSceneLoader.Init():Boolean ;
 begin
@@ -69,7 +70,7 @@ function TSceneLoader.Run(pg: IProgressGetter): TObject;
 begin
   pg.SetMessage('Map generation') ;
   Result:=TMap.Create(128) ;
-  TMap(Result).PopulateObjects(12) ;
+  TMap(Result).PopulateObjects(12,OBJECTS_COUNT) ;
 end;
 
 procedure TSceneLoader.UnInit() ;

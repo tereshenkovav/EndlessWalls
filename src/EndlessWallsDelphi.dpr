@@ -11,7 +11,8 @@ uses
   map in 'core\map.pas',
   wallsrender in 'core\wallsrender.pas',
   mapgenerator in 'core\mapgenerator.pas',
-  sceneloader in 'core\sceneloader.pas';
+  sceneloader in 'core\sceneloader.pas',
+  constants in 'core\constants.pas';
 
 begin
   with TMain.Create() do begin
