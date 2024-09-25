@@ -99,6 +99,7 @@ type
     procedure UpdateOpenedByPosDirDist(x,y:Integer; dir:TDir; dist:Integer) ;
     procedure SetMarker(x,y:Integer; dir,markerdir:TDir; code:Integer) ;
     function SaveTo2D(var sx:Integer; var sy:Integer; var startx:Integer; var starty:Integer):T2DMap ;
+    function getObjectsCount():Integer ;
   end;
 
 implementation
@@ -285,6 +286,11 @@ begin
     Result:=-1 ;
 end;
 
+function TMap.getObjectsCount: Integer;
+begin
+  Result:=objects.Count ;
+end;
+
 // Реализация неоптимальна, нужно вести учет открытых ячеек в момент setOpened
 function TMap.getResult: Integer;
 var p:TMapCell ;
@@ -377,7 +383,7 @@ begin
       TMap.UpdateXYByDir(xn,yn,d) ;
       if isPointExist(xn,yn) then Inc(cnt) ;
     end;
-    if (cnt=1)and((c.x<>0)and(c.y<>0)) then list.Add(TNextPoint.NewP(c.x,c.y)) ;
+    if (cnt=1)and( not ((c.x=0)and(c.y=0))) then list.Add(TNextPoint.NewP(c.x,c.y)) ;
   end;
 
   for i := 0 to count-1 do begin

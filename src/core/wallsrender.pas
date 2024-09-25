@@ -205,18 +205,21 @@ begin
 end ;
 
 procedure renderObject(tex_object:TSfmlTexture; pc:Single) ;
+var sz:Single ;
 begin
+   sz:=tex_object.Size.X/256 ;
+
    glColor3f(pc, pc, pc);
       tex_object.Bind() ;
       glBegin(GL_POLYGON);
         glTexCoord2f(0.0, 0.0);
-        glVertex3f(-0.5, -0.0, 0.0);
+        glVertex3f(-sz/2, 1.0-sz, 0.0);
         glTexCoord2f(0.0, 1.0);
-        glVertex3f(-0.5, 1.0, 0.0);
+        glVertex3f(-sz/2, 1.0, 0.0);
         glTexCoord2f(1.0, 1.0);
-        glVertex3f(0.5, 1.0, 0.0);
+        glVertex3f(sz/2, 1.0, 0.0);
         glTexCoord2f(1.0, 0.0);
-        glVertex3f(0.5, -0.0, 0.0);
+        glVertex3f(sz/2, 1.0-sz, 0.0);
       glEnd();
       SfmlTextureBind(nil) ;
 end ;

@@ -28,6 +28,7 @@ type
     spr_objects:array of TSfmlSprite ;
     collection:TUniDictionary<Integer,Boolean> ;
     tekmarkercode:Integer ;
+    objects_on_search:Integer ;
     procedure MiniMapRebuild() ;
     procedure SaveMapToImage(const filename:string) ;
     procedure SwitchTekMarker(code:Integer) ;
@@ -46,7 +47,7 @@ const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
       MMAPSZ = 7 ;
       MARKERS_COUNT = 3 ;
-      OBJECTS_COUNT = 3 ;
+      OBJECTS_COUNT = 12 ;
 
 constructor TSceneGame.Create(Amap:TMap);
 begin
@@ -83,9 +84,9 @@ begin
   SetLength(spr_objects,OBJECTS_COUNT) ;
   for i := 0 to OBJECTS_COUNT-1 do begin
     spr_objects[i]:=TSfmlSprite.Create() ;
-    spr_objects[i].Scale(0.25,0.25) ;
+    spr_objects[i].Scale(64/tex_objects[i].Size.X,64/tex_objects[i].Size.Y) ;
     spr_objects[i].SetTexture(tex_objects[i],True) ;
-    spr_objects[i].Origin:=SfmlVector2f(32,32) ;
+    spr_objects[i].Origin:=SfmlVector2f(tex_objects[i].Size.X/2,tex_objects[i].Size.X/2) ;
   end;
 
   collection:=TUniDictionary<Integer,Boolean>.Create() ;
@@ -114,6 +115,8 @@ begin
 
   THomeDir.createDirInHomeIfNeed('EndlessWalls') ;
   SaveMapToImage(THomeDir.getFileNameInHome('EndlessWalls','map.png')) ;
+
+  objects_on_search:=map.getObjectsCount() ;
 
   Result:=True ;
 end ;
@@ -214,8 +217,7 @@ begin
 end ;
 
 procedure TSceneGame.RenderFunc() ;
-var
-  i: Integer;
+var i,x,y:Integer;
 begin
   window.Clear(SfmlWhite);
   textInfo.UnicodeString:=Format('Map result: %d/%d',[map.getResult(),map.getTotalLen()]) ;
@@ -231,9 +233,16 @@ begin
   DrawSprite(arrow,846,340) ;
   DrawSprite(spr_tekmarker,930,340) ;
 
-  for i := 0 to OBJECTS_COUNT-1 do begin
+  x:=820 ;
+  y:=440 ;
+  for i := 0 to objects_on_search-1 do begin
     spr_objects[i].Color:=IfThen(collection[i],SfmlWhite,SfmlBlack) ;
-    DrawSprite(spr_objects[i],800+70*i,440) ;
+    DrawSprite(spr_objects[i],x,y) ;
+    Inc(x,80) ;
+    if i mod 3 = 2 then begin
+      x:=820 ;
+      Inc(y,90) ;
+    end;
   end;
 end ;
 

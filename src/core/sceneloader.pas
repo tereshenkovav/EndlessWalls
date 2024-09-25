@@ -69,7 +69,7 @@ function TSceneLoader.Run(pg: IProgressGetter): TObject;
 begin
   pg.SetMessage('Map generation') ;
   Result:=TMap.Create(128) ;
-  TMap(Result).PopulateObjects(3) ;
+  TMap(Result).PopulateObjects(12) ;
 end;
 
 procedure TSceneLoader.UnInit() ;
