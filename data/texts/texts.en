@@ -13,5 +13,5 @@ ABOUT_VERSION=%s, commit %s, branch %s
 ABOUT_INFO=   A roving game about finding ponies in a generated maze\nMade with using special abilities of any ponies. Developed\nwith ObjectPascal/SFML. Author - Aleksandr V. Tereshenkov.\nHome pages: tav-developer.itch.io and github.com/tereshenkovav
 ABOUT_CREDITS=Credits
 HELP_TITLE=Help
-HELP_TEXT=  The task of the game is to collect all the ponies in a randomly created maze.\nMovement in the maze - forward and backward arrows, rotation - right and left arrows.\nTo pick up the found pony, you need to come close to it.\n   Using the Z,X,C keys, you can mark the walls on the left, front and right.\nYou can select the type of the current label using the numbers 1-2-3.\n  The game ends when all the hidden ponies are found.
+HELP_TEXT=The task of the game is to collect all the ponies in a randomly created maze. Movement in the maze - forward and backward arrows, rotation - right and left arrows. To pick up the found pony, you need to come close to it.\n Using the Z,X,C keys, you can mark the walls on the left, front and right. You can select the type of the current label using the numbers 1-2-3.\n The game ends when all the hidden ponies are found.
 MAP_GEN=Map generation

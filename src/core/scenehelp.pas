@@ -28,7 +28,7 @@ uses SceneMainMenu, SfmlUtils, CommonData ;
 function TSceneHelp.Init():Boolean ;
 begin
   textTitle:=createText(TCommonData.Font,TCommonData.texts.getText('HELP_TITLE'),28,SfmlBlack) ;
-  textInfo:=createText(TCommonData.Font,TCommonData.texts.getText('HELP_TEXT'),24,SfmlBlack) ;
+  textInfo:=createText(TCommonData.Font,'',24,SfmlBlack) ;
   Result:=True ;
 end ;
 
@@ -47,7 +47,7 @@ procedure TSceneHelp.RenderFunc() ;
 begin
   window.Clear(SfmlWhite) ;
   DrawTextCentered(textTitle,wwidth/2,50) ;
-  DrawTextCentered(textInfo,wwidth/2,140) ;
+  drawTextInBlockWidth(textInfo,TCommonData.texts.getText('HELP_TEXT'),40,140,wwidth-80,3) ;
 end ;
 
 procedure TSceneHelp.UnInit() ;
