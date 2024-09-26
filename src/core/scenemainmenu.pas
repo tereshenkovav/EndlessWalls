@@ -29,14 +29,14 @@ type
 
 implementation
 uses StrUtils,
- SceneLoader, SceneAbout, SceneHelp,
+ SceneSizeSelect, SceneAbout, SceneHelp,
  SfmlUtils, CommonData, Game ;
 
 function TSceneMainMenu.Init():Boolean ;
 begin
   loadLogo() ;
 
-  menu:=TMenuKeyboardText.Create(TCommonData.selector,wwidth div 2-100,320,55,
+  menu:=TMenuKeyboardText.Create(TCommonData.selector,wwidth div 2-100,340,55,
     TCommonData.Font,32,SfmlBlack) ;
   buildMenu() ;
   menu.setIndex(activeidx) ;
@@ -87,7 +87,7 @@ begin
       if (event.event.key.code in [sfKeySpace,sfKeyReturn]) then begin
         case menu.getSelIndex() of
           0: begin
-            nextscene:=TSceneLoader.Create() ;
+            nextscene:=TSceneSizeSelect.Create() ;
             Exit(TSceneResult.Switch) ;
           end;
           1: begin
