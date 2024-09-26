@@ -12,7 +12,11 @@ uses
   wallsrender in 'core\wallsrender.pas',
   mapgenerator in 'core\mapgenerator.pas',
   sceneloader in 'core\sceneloader.pas',
-  constants in 'core\constants.pas';
+  constants in 'core\constants.pas',
+  commondata in 'core\commondata.pas',
+  sceneabout in 'core\sceneabout.pas',
+  scenehelp in 'core\scenehelp.pas',
+  scenemainmenu in 'core\scenemainmenu.pas';
 
 begin
   with TMain.Create() do begin

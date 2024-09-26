@@ -42,7 +42,7 @@ type
 implementation
 uses Math,
   SfmlUtils, homedir,
-  Constants ;
+  Constants, SceneMainMenu ;
 
 const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
@@ -152,7 +152,8 @@ begin
     for event in events do
       if (event.event.EventType = sfEvtKeyPressed) then begin
         if (event.event.key.code = sfKeyEscape) then begin
-          Exit(TSceneResult.Close) ;
+          nextscene:=TSceneMainMenu.Create() ;
+          Exit(TSceneResult.Switch) ;
         end;
         if (event.event.key.code = sfKeyUp) then begin
           wr.MoveForw() ;

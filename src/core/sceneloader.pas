@@ -27,12 +27,12 @@ type
 
 implementation
 uses SfmlUtils,
-  SceneGame, Map, Constants ;
+  CommonData, SceneGame, Map, Constants ;
 
 function TSceneLoader.Init():Boolean ;
 begin
   font:=TSfmlFont.Create('fonts'+PATH_SEP+'arial.ttf');
-  textLoad:=createText(font,'',24,SfmlWhite) ;
+  textLoad:=createText(font,'',24,SfmlBlack) ;
   str:='' ;
 
   runner:=TTaskBGRunner.Create() ;
@@ -63,12 +63,13 @@ end ;
 
 procedure TSceneLoader.RenderFunc() ;
 begin
+  window.Clear(SfmlWhite) ;
   drawText(textLoad,30,728) ;
 end ;
 
 function TSceneLoader.Run(pg: IProgressGetter): TObject;
 begin
-  pg.SetMessage('Map generation') ;
+  pg.SetMessage(TCommonData.texts.getText('MAP_GEN')) ;
   Result:=TMap.Create(128) ;
   TMap(Result).PopulateObjects(12,OBJECTS_COUNT) ;
 end;

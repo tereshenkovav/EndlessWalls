@@ -129,6 +129,10 @@
         <DCCReference Include="core\mapgenerator.pas"/>
         <DCCReference Include="core\sceneloader.pas"/>
         <DCCReference Include="core\constants.pas"/>
+        <DCCReference Include="core\commondata.pas"/>
+        <DCCReference Include="core\sceneabout.pas"/>
+        <DCCReference Include="core\scenehelp.pas"/>
+        <DCCReference Include="core\scenemainmenu.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

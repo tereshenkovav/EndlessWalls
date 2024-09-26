@@ -12,17 +12,19 @@ type
 implementation
 uses SysUtils,
   SfmlWindow,
-  Game, Scene, SceneLoader, Helpers, Logger ;
+  Game, Scene, SceneMainMenu, Helpers, Logger, CommonData ;
 
 procedure TMain.Run() ;
 var game:TGame ;
 begin
   ChDir(ExtractFilePath(ParamStr(0))+PATH_SEP+'..'+PATH_SEP+'data') ;
+  TCommonData.Init() ;
   game:=TGame.Create(1024,768,'EndlessWalls',
-    'EndlessWalls','images'+PATH_SEP+'icon.png') ;
+    TCommonData.texts.getText('GAME_TITLE'),'images'+PATH_SEP+'icon.png') ;
   if FileExists('developer.config') then game.enableFPSInTitle(True) ;
-  game.Run(TSceneLoader.Create()) ;
+  game.Run(TSceneMainMenu.Create()) ;
   game.Free ;
+  TCommonData.UnInit() ;
 end ;
 
 end.
