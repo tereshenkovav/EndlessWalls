@@ -17,7 +17,6 @@ type
     tex_markers:array of TSfmlTexture ;
     tex_objects:array of TSfmlTexture ;
     wr:TWallsRender ;
-    font:TSfmlFont ;
     arrow:TSfmlSprite ;
     map:TMap ;
     textInfo:TSfmlText ;
@@ -29,6 +28,7 @@ type
     objects_on_search:TUniDictionary<Integer,Boolean> ;
     tekmarkercode:Integer ;
     effect_found:TSfmlSound ;
+    rect:TSfmlRectangleShape ;
     procedure MiniMapRebuild() ;
     procedure SaveMapToImage(const filename:string) ;
     procedure SwitchTekMarker(code:Integer) ;
@@ -43,7 +43,7 @@ type
 
 implementation
 uses Math,
-  SfmlUtils, homedir,
+  SfmlUtils, homedir, CommonData,
   Constants, SceneMainMenu, SubSceneMenuGame, SubSceneMenuWin ;
 
 const MMAPRES = 33 ;
@@ -62,8 +62,7 @@ begin
   wr.SetStart(0,0,dUp) ;
   ogl:=TSceneOpenGL.Create(0,0,768,768,CreateSfmlColor($000000),wr) ;
   overscene:=ogl ;
-  font:=TSfmlFont.Create('fonts'+PATH_SEP+'arial.ttf');
-  textInfo:=createText(font,'',24,SfmlBlack) ;
+  textInfo:=createText(TCommonData.Font,'',18,SfmlBlack) ;
   arrow:=loadSprite('images'+PATH_SEP+'arrow.png',[sloCentered,sloNoSmooth]) ;
   ineffect:=False ;
 
@@ -118,6 +117,10 @@ begin
   effect_found:=TSfmlSound.Create(TSfmlSoundBuffer.Create('sounds'+PATH_SEP+'effect_found.ogg'));
   effect_found.Volume:=IfThen(profile.IsSoundOn(),100,0) ;
 
+  rect:=TSfmlRectangleShape.Create() ;
+  rect.OutlineThickness:=0;
+  rect.FillColor:=CreateSfmlColor($A0A0A0) ;
+
   Result:=True ;
 end ;
 
@@ -137,7 +140,7 @@ begin
   p:=0 ;
   for i := 0 to MMAPRES-1 do
     for j := 0 to MMAPRES-1 do begin
-      c:=createSFMLColor($404040) ;
+      c:=createSFMLColor($A0A0A0) ;
       if (map.isPointOpened(wr.getX()-MMAPD+i,wr.getY()+MMAPD-j)) then c:=createSFMLColor($008000) ;
       if (map.isPointDark(wr.getX()-MMAPD+i,wr.getY()+MMAPD-j)) then c:=createSFMLColor($006000) ;
       mapvertex.Vertex[p].Color:=c ;
@@ -241,8 +244,17 @@ procedure TSceneGame.RenderFunc() ;
 var code,p,x,y:Integer;
 begin
   window.Clear(SfmlWhite);
-  textInfo.UnicodeString:=Format('Map result: %d/%d',[map.getResult(),map.getTotalLen()]) ;
-  DrawText(textInfo,800,10) ;
+  textInfo.UnicodeString:=UTF8Decode(Format(TCommonData.texts.getText('FMT_MAPSIZE'),[map.getTotalLen()])) ;
+  DrawTextCentered(textInfo,(1024+768)/2,6);
+  textInfo.UnicodeString:=UTF8Decode(Format(TCommonData.texts.getText('FMT_MAPOPENED'),[map.getResult()])) ;
+  DrawTextCentered(textInfo,(1024+768)/2,26);
+  textInfo.UnicodeString:=UTF8Decode(TCommonData.texts.getText('TEXT_MARKER')) ;
+  DrawTextCentered(textInfo,960,300);
+  textInfo.UnicodeString:=UTF8Decode(TCommonData.texts.getText('TEXT_DIRECTION')) ;
+  DrawTextCentered(textInfo,846,300);
+  textInfo.UnicodeString:=UTF8Decode(TCommonData.texts.getText('TEXT_COLLECTION')) ;
+  DrawTextCentered(textInfo,(1024+768)/2,410);
+
   window.Draw(mapvertex) ;
 
   case wr.getDir() of
@@ -251,11 +263,26 @@ begin
     dRight: arrow.Rotation:=90 ;
     dDown: arrow.Rotation:=180 ;
   end;
-  DrawSprite(arrow,846,340) ;
-  DrawSprite(spr_tekmarker,930,340) ;
+
+  rect.Size:=SfmlVector2f(64,64) ;
+  rect.Position:=SfmlVector2f(846,360);
+  rect.Origin:=SfmlVector2f(rect.Size.X/2,rect.Size.Y/2) ;
+  window.Draw(rect) ;
+  DrawSprite(arrow,846,360) ;
+
+  rect.Size:=SfmlVector2f(64,64) ;
+  rect.Position:=SfmlVector2f(960,360);
+  rect.Origin:=SfmlVector2f(rect.Size.X/2,rect.Size.Y/2) ;
+  window.Draw(rect) ;
+  DrawSprite(spr_tekmarker,960,360) ;
+
+  rect.Size:=SfmlVector2f(231,768-450) ;
+  rect.Position:=SfmlVector2f(768+14,440);
+  rect.Origin:=SfmlVector2f(0,0) ;
+  window.Draw(rect) ;
 
   x:=820 ;
-  y:=440 ;
+  y:=480 ;
   p:=0 ;
   for code in objects_on_search.AllKeys do begin
     spr_objects[code].Color:=IfThen(objects_on_search[code],SfmlWhite,SfmlBlack) ;
@@ -263,7 +290,7 @@ begin
     Inc(x,80) ;
     if p mod 3 = 2 then begin
       x:=820 ;
-      Inc(y,90) ;
+      Inc(y,80) ;
     end;
     Inc(p) ;
   end;
@@ -311,9 +338,9 @@ begin
   wr.Free ;
   map.Free ;
   textinfo.Free ;
-  font.Free ;
   mapvertex.Free ;
   effect_found.Free ;
+  rect.Free ;
 
   for i:=0 to Length(tex_markers)-1 do
     tex_markers[i].Free ;
