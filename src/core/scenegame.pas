@@ -28,6 +28,7 @@ type
     spr_objects:array of TSfmlSprite ;
     objects_on_search:TUniDictionary<Integer,Boolean> ;
     tekmarkercode:Integer ;
+    effect_found:TSfmlSound ;
     procedure MiniMapRebuild() ;
     procedure SaveMapToImage(const filename:string) ;
     procedure SwitchTekMarker(code:Integer) ;
@@ -113,6 +114,9 @@ begin
 
   objects_on_search:=map.getObjectsCodes() ;
 
+  effect_found:=TSfmlSound.Create(TSfmlSoundBuffer.Create('sounds'+PATH_SEP+'effect_found.ogg'));
+  effect_found.Volume:=IfThen(profile.IsSoundOn(),100,0) ;
+
   Result:=True ;
 end ;
 
@@ -157,15 +161,19 @@ begin
         end;
         if (event.event.key.code = sfKeyUp) then begin
           wr.MoveForw() ;
-          if wr.getFrontObjectCode(code) then
+          if wr.getFrontObjectCode(code) then begin
             objects_on_search[code]:=True ;
+            effect_found.Play() ;
+          end;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
         if (event.event.key.code = sfKeyDown) then begin
           wr.MoveBack() ;
-          if wr.getFrontObjectCode(code) then
+          if wr.getFrontObjectCode(code) then begin
             objects_on_search[code]:=True ;
+            effect_found.Play() ;
+          end;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
@@ -288,6 +296,7 @@ begin
   textinfo.Free ;
   font.Free ;
   mapvertex.Free ;
+  effect_found.Free ;
 
   for i:=0 to Length(tex_markers)-1 do
     tex_markers[i].Free ;
