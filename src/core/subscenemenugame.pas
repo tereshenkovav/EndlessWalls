@@ -58,8 +58,8 @@ end ;
 procedure TSubSceneMenuGame.RenderFunc() ;
 begin
   window.Draw(rect) ;
-  drawTextCentered(textResume,768/2,768/2-50) ;
-  drawTextCentered(textMenu,768/2,768/2+50) ;
+  drawTextCentered(textResume,768/2,768/2-34) ;
+  drawTextCentered(textMenu,768/2,768/2+34) ;
 end ;
 
 procedure TSubSceneMenuGame.UnInit() ;
