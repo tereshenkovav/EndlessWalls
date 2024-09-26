@@ -32,6 +32,7 @@ type
     procedure MiniMapRebuild() ;
     procedure SaveMapToImage(const filename:string) ;
     procedure SwitchTekMarker(code:Integer) ;
+    function isFoundAll():Boolean ;
   public
     constructor Create(Amap:TMap) ;
     function Init():Boolean ; override ;
@@ -43,7 +44,7 @@ type
 implementation
 uses Math,
   SfmlUtils, homedir,
-  Constants, SceneMainMenu, SubSceneMenuGame ;
+  Constants, SceneMainMenu, SubSceneMenuGame, SubSceneMenuWin ;
 
 const MMAPRES = 33 ;
       MMAPD = (MMAPRES-1) div 2 ;
@@ -120,6 +121,14 @@ begin
   Result:=True ;
 end ;
 
+function TSceneGame.isFoundAll: Boolean;
+var code:Integer ;
+begin
+  for code in objects_on_search.AllKeys do
+    if not objects_on_search[code] then Exit(False) ;
+  Result:=True ;  
+end;
+
 procedure TSceneGame.MiniMapRebuild;
 var i,j,p:Integer ;
     c:TSfmlColor ;
@@ -164,6 +173,10 @@ begin
           if wr.getFrontObjectCode(code) then begin
             objects_on_search[code]:=True ;
             effect_found.Play() ;
+            if isFoundAll() then begin
+              subscene:=TSubSceneMenuWin.Create() ;
+              Exit(TSceneResult.SetSubScene) ;
+            end;
           end;
           ogl.Reset() ;
           MiniMapRebuild() ;
@@ -173,6 +186,10 @@ begin
           if wr.getFrontObjectCode(code) then begin
             objects_on_search[code]:=True ;
             effect_found.Play() ;
+            if isFoundAll() then begin
+              subscene:=TSubSceneMenuWin.Create() ;
+              Exit(TSceneResult.SetSubScene) ;
+            end;
           end;
           ogl.Reset() ;
           MiniMapRebuild() ;

@@ -18,7 +18,8 @@ uses
   scenehelp in 'core\scenehelp.pas',
   scenemainmenu in 'core\scenemainmenu.pas',
   subscenemenugame in 'core\subscenemenugame.pas',
-  scenesizeselect in 'core\scenesizeselect.pas';
+  scenesizeselect in 'core\scenesizeselect.pas',
+  subscenemenuwin in 'core\subscenemenuwin.pas';
 
 begin
   with TMain.Create() do begin
