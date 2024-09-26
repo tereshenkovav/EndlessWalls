@@ -16,7 +16,8 @@ uses
   commondata in 'core\commondata.pas',
   sceneabout in 'core\sceneabout.pas',
   scenehelp in 'core\scenehelp.pas',
-  scenemainmenu in 'core\scenemainmenu.pas';
+  scenemainmenu in 'core\scenemainmenu.pas',
+  subscenemenugame in 'core\subscenemenugame.pas';
 
 begin
   with TMain.Create() do begin
