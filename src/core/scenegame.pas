@@ -33,6 +33,7 @@ type
     procedure SaveMapToImage(const filename:string) ;
     procedure SwitchTekMarker(code:Integer) ;
     function isFoundAll():Boolean ;
+    procedure ProcessingGrabObject() ;
   public
     constructor Create(Amap:TMap) ;
     function Init():Boolean ; override ;
@@ -109,8 +110,10 @@ begin
 
   MiniMapRebuild() ;
 
-  THomeDir.createDirInHomeIfNeed('EndlessWalls') ;
-  SaveMapToImage(THomeDir.getFileNameInHome('EndlessWalls','map.png')) ;
+  if FileExists('developer.config') then begin
+    THomeDir.createDirInHomeIfNeed('EndlessWalls') ;
+    SaveMapToImage(THomeDir.getFileNameInHome('EndlessWalls','map.png')) ;
+  end;
 
   objects_on_search:=map.getObjectsCodes() ;
 
@@ -157,6 +160,15 @@ begin
   mapvertex.Vertex[p+3].Color:=c ;
 end;
 
+procedure TSceneGame.ProcessingGrabObject();
+var code:Integer ;
+begin
+  if wr.getFrontObjectCode(code) then begin
+    objects_on_search[code]:=True ;
+    effect_found.Play() ;
+  end;
+end;
+
 function TSceneGame.FrameFunc(dt:Single; events:TUniList<TSfmlEventEx>):TSceneResult ;
 var event:TSfmlEventEx ;
     dir:TDir ;
@@ -173,27 +185,13 @@ begin
         end;
         if (event.event.key.code = sfKeyUp) then begin
           wr.MoveForw() ;
-          if wr.getFrontObjectCode(code) then begin
-            objects_on_search[code]:=True ;
-            effect_found.Play() ;
-            if isFoundAll() then begin
-              subscene:=TSubSceneMenuWin.Create() ;
-              Exit(TSceneResult.SetSubScene) ;
-            end;
-          end;
+          ProcessingGrabObject() ;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
         if (event.event.key.code = sfKeyDown) then begin
           wr.MoveBack() ;
-          if wr.getFrontObjectCode(code) then begin
-            objects_on_search[code]:=True ;
-            effect_found.Play() ;
-            if isFoundAll() then begin
-              subscene:=TSubSceneMenuWin.Create() ;
-              Exit(TSceneResult.SetSubScene) ;
-            end;
-          end;
+          ProcessingGrabObject() ;
           ogl.Reset() ;
           MiniMapRebuild() ;
         end;
@@ -237,7 +235,12 @@ begin
         if lastrotdir=dLeft then wr.RotLeft() else wr.RotRight() ;
       end;
     end ;
-  end
+  end ;
+
+  if isFoundAll() then begin
+    subscene:=TSubSceneMenuWin.Create() ;
+    Exit(TSceneResult.SetSubScene) ;
+  end;
 end ;
 
 procedure TSceneGame.RenderFunc() ;

@@ -13,7 +13,6 @@ type
   TSceneLoader = class(TScene)
   private
     t:Single ;
-    font:TSfmlFont ;
     textLoad:TSfmlText ;
     str:string ;
     mapsize:Integer ;
@@ -35,8 +34,7 @@ uses SfmlUtils,
 
 function TSceneLoader.Init():Boolean ;
 begin
-  font:=TSfmlFont.Create('fonts'+PATH_SEP+'arial.ttf');
-  textLoad:=createText(font,'',24,SfmlBlack) ;
+  textLoad:=createText(TCommonData.Font,'',24,SfmlBlack) ;
   str:='' ;
 
   runner:=TTaskBGRunner.Create() ;
@@ -95,7 +93,6 @@ end;
 
 procedure TSceneLoader.UnInit() ;
 begin
-  font.Free ;
   textLoad.Free ;
 end ;
 

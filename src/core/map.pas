@@ -77,7 +77,6 @@ type
     class procedure RollDirRight(var dir:TDir) ;
     class function GetRolledDirLeft(dir:TDir):TDir ;
     class function GetRolledDirRight(dir:TDir):TDir ;
-    class function GetDirStr(dir:TDir):string ;
     constructor Create(size:Integer) ;
     destructor Destroy() ; override ;
     procedure PopulateObjects(count,all:Integer) ;
@@ -265,17 +264,6 @@ begin
   z2:=isPointExist(xn,yn) ;
 
   Result:=(not z1)and(not z2) ;
-end;
-
-class function TMap.GetDirStr(dir: TDir): string;
-begin
-  Result:='???' ;
-  case dir of
-    dLeft: Result:='Left' ;
-    dUp:  Result:='Up' ;
-    dRight:  Result:='Right' ;
-    dDown:  Result:='Down' ;
-  end;
 end;
 
 function TMap.getIndexByXY(x, y: Integer): Integer;
