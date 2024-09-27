@@ -1,0 +1,12 @@
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=EndlessWalls
+Icon[ru]=EndlessWalls
+Name[ru]=EndlessWalls
+Exec=EndlessWalls
+Name=EndlessWalls
+Categories=Game

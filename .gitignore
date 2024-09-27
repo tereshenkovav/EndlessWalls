@@ -66,6 +66,9 @@ __recovery/
 
 build/i386-win32
 build/x86_64-linux
+data/texts/deflang
+data/texts/credits.txt
+data/texts/version.txt
 bin/
 setup/windows/*.zip
 setup/windows/*.exe

@@ -1,0 +1,12 @@
+SetCompressor LZMA
+SetCompressionLevel 9
+ZipFile FindingPony-$LANGH$-%VERSION%-Win32.zip
+
+Dir ..\..\data
+
+SetOutPath data\texts
+Text $LANGL$\r\n deflang
+
+SetOutPath bin
+File ..\..\bin\EndlessWalls.exe
+Files ..\..\PascalGameEngine\csfml\win32\*.dll
