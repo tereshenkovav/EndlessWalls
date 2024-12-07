@@ -13,7 +13,7 @@ echo $BUILDTAG > ../../data/texts/version.txt
 echo $BUILDCOMMIT >> ../../data/texts/version.txt
 echo $BUILDBRANCH >> ../../data/texts/version.txt
 
-appdir=/tmp/EndlessWalls.app
+appdir=/tmp/FindingPony.app
 mkdir $appdir
 mkdir $appdir/Contents
 mkdir $appdir/Contents/MacOS
@@ -42,9 +42,9 @@ cp -R /Library/Frameworks/vorbisfile.framework $appdir/Contents/Frameworks
 cd /tmp 
 
 echo en > $appdir/Contents/data/texts/deflang
-zip -r9 EndlessWalls-EN-$VERSION-MacOS.app.zip EndlessWalls.app
-hdiutil create -srcfolder $appdir -volname "EndlessWalls" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDZO -size 30000k -imagekey zlib-level=9 EndlessWalls-EN-$VERSION-MacOS.dmg
+zip -r9 FindingPony-EN-$VERSION-MacOS.app.zip FindingPony.app
+hdiutil create -srcfolder $appdir -volname "FindingPony" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDZO -size 30000k -imagekey zlib-level=9 FindingPony-EN-$VERSION-MacOS.dmg
 
 echo ru > $appdir/Contents/data/texts/deflang
-zip -r9 EndlessWalls-RU-$VERSION-MacOS.app.zip EndlessWalls.app
-hdiutil create -srcfolder $appdir -volname "EndlessWalls" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDZO -size 30000k -imagekey zlib-level=9 EndlessWalls-RU-$VERSION-MacOS.dmg
+zip -r9 FindingPony-RU-$VERSION-MacOS.app.zip FindingPony.app
+hdiutil create -srcfolder $appdir -volname "FindingPony" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDZO -size 30000k -imagekey zlib-level=9 FindingPony-RU-$VERSION-MacOS.dmg
